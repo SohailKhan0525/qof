@@ -10,6 +10,11 @@ const guide = '#17304a30';
 const designWidth = 600;
 const designHeight = 360;
 
+function stage(progress, start, end) {
+  const elapsed = Math.max(0, Math.min(1, (progress - start) / (end - start)));
+  return elapsed * elapsed * (3 - 2 * elapsed);
+}
+
 function rect(ctx, x, y, width, height, radius, fill, stroke) {
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(x, y, width, height, radius);
@@ -25,6 +30,7 @@ function rect(ctx, x, y, width, height, radius, fill, stroke) {
 }
 
 function dot(ctx, x, y, radius, fill, stroke) {
+  if (radius <= 0) return;
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = fill;
@@ -35,13 +41,43 @@ function dot(ctx, x, y, radius, fill, stroke) {
   }
 }
 
-function line(ctx, x1, y1, x2, y2, color, width = 1.5) {
+function line(ctx, x1, y1, x2, y2, color, width = 1.5, progress = 1) {
+  if (progress <= 0) return;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
+  ctx.lineTo(x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress);
   ctx.lineWidth = width;
   ctx.strokeStyle = color;
   ctx.stroke();
+}
+
+function arc(ctx, x, y, radius, start, end, color, width, progress) {
+  if (progress <= 0) return;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, start, start + (end - start) * progress, end < start);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.stroke();
+}
+
+// de Casteljau subdivision lets the drawn end follow the original curve.
+function interpolate(from, to, progress) {
+  return [from[0] + (to[0] - from[0]) * progress, from[1] + (to[1] - from[1]) * progress];
+}
+
+function quadraticTo(ctx, from, control, end, progress) {
+  const a = interpolate(from, control, progress);
+  const b = interpolate(control, end, progress);
+  ctx.quadraticCurveTo(...a, ...interpolate(a, b, progress));
+}
+
+function cubicTo(ctx, from, first, second, end, progress) {
+  const a = interpolate(from, first, progress);
+  const b = interpolate(first, second, progress);
+  const c = interpolate(second, end, progress);
+  const d = interpolate(a, b, progress);
+  const e = interpolate(b, c, progress);
+  ctx.bezierCurveTo(...a, ...d, ...interpolate(d, e, progress));
 }
 
 function label(ctx, text, x, y, { font = '600 14px "DM Sans", Arial, sans-serif', color = ink } = {}) {
@@ -86,16 +122,16 @@ function browserBar(ctx, width, fill) {
   rect(ctx, 67, 10, width - 86, 14, 6, '#ffffff83');
 }
 
-function drawDiscovery(ctx, offset) {
+function drawDiscovery(ctx, p, offset) {
   cropMarks(ctx, 47, 32, 504, 292);
   card(ctx, { x: 239, y: 44, width: 253, height: 163, angle: .12, fill: softBlue, edge: cobalt }, (layer, width) => {
     browserBar(layer, width, '#b8cbef');
     cropMarks(layer, 24, 57, 202, 81, '#2b58bb69');
     dot(layer, 157, 98, 28, '#b8cbef');
-    dot(layer, 178, 81, 10, cobalt);
-    line(layer, 39, 83, 111, 83, cobalt, 4);
-    line(layer, 39, 100, 99, 100, '#2b58bb70', 3);
-    line(layer, 39, 118, 88, 118, '#2b58bb70', 3);
+    dot(layer, 178, 81, 10 * stage(p, .14, .39), cobalt);
+    line(layer, 39, 83, 111, 83, cobalt, 4, stage(p, .04, .28));
+    line(layer, 39, 100, 99, 100, '#2b58bb70', 3, stage(p, .11, .35));
+    line(layer, 39, 118, 88, 118, '#2b58bb70', 3, stage(p, .17, .41));
   });
 
   card(ctx, { x: 76, y: 105, width: 331, height: 182, angle: -.075, fill: cream }, (layer, width) => {
@@ -111,47 +147,44 @@ function drawDiscovery(ctx, offset) {
     layer.closePath();
     layer.fillStyle = '#90baab';
     layer.fill();
-    line(layer, 138, 78, 250, 78, ink, 7);
-    line(layer, 138, 103, 221, 103, guide, 4);
-    line(layer, 138, 120, 232, 120, guide, 4);
+    line(layer, 138, 78, 250, 78, ink, 7, stage(p, .1, .38));
+    line(layer, 138, 103, 221, 103, guide, 4, stage(p, .19, .47));
+    line(layer, 138, 120, 232, 120, guide, 4, stage(p, .26, .54));
     rect(layer, 137, 141, 65, 18, 5, softBlue);
   });
 
   ctx.save();
   ctx.translate(offset, offset / 2);
-  line(ctx, 414, 236, 487, 303, '#17304a25', 31);
-  line(ctx, 409, 230, 483, 298, ink, 28);
-  line(ctx, 409, 230, 483, 298, peach, 22);
-  ctx.lineWidth = 6;
-  dot(ctx, 370, 187, 66, '#dce8fbc9', cobalt);
-  ctx.lineWidth = 1.5;
-  dot(ctx, 370, 187, 56, '#e9f4ff58', '#2b58bb70');
-  ctx.beginPath();
-  ctx.arc(370, 187, 42, Math.PI * 1.03, Math.PI * 1.58);
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = '#ffffffc0';
-  ctx.stroke();
+  const handle = stage(p, .45, .81);
+  line(ctx, 414, 236, 487, 303, '#17304a25', 31, handle);
+  line(ctx, 409, 230, 483, 298, ink, 28, handle);
+  line(ctx, 409, 230, 483, 298, peach, 22, handle);
+  dot(ctx, 370, 187, 66, '#dce8fbc9');
+  arc(ctx, 370, 187, 66, -Math.PI / 2, Math.PI * 1.5, cobalt, 6, stage(p, .19, .77));
+  dot(ctx, 370, 187, 56, '#e9f4ff58');
+  arc(ctx, 370, 187, 56, -Math.PI / 2, Math.PI * 1.5, '#2b58bb70', 1.5, stage(p, .38, .85));
+  arc(ctx, 370, 187, 42, Math.PI * 1.03, Math.PI * 1.58, '#ffffffc0', 5, stage(p, .75, 1));
   ctx.restore();
 }
 
-function drawMessage(ctx, offset) {
+function drawMessage(ctx, p, offset) {
   cropMarks(ctx, 61, 39, 478, 280);
   card(ctx, { x: 218, y: 49, width: 260, height: 180, angle: .14, fill: mint, edge: moss }, (layer, width, height) => {
     cropMarks(layer, 16, 16, width - 32, height - 32, '#35645560');
     rect(layer, 172, 25, 57, 57, 5, '#edf6e9', moss);
-    line(layer, 186, 53, 216, 53, moss, 2);
-    line(layer, 201, 38, 201, 68, moss, 2);
+    line(layer, 186, 53, 216, 53, moss, 2, stage(p, .2, .42));
+    line(layer, 201, 38, 201, 68, moss, 2, stage(p, .32, .54));
   });
   card(ctx, { x: 120, y: 62, width: 296, height: 219, angle: -.09, fill: cream }, (layer, width) => {
-    line(layer, 28, 42, width - 30, 42, '#17304a50');
+    line(layer, 28, 42, width - 30, 42, '#17304a50', 1.5, stage(p, 0, .24));
     label(layer, 'Say hello', 28, 81, { font: '32px Georgia, serif' });
-    line(layer, 29, 105, 232, 105, '#17304a50', 2);
-    line(layer, 29, 127, 202, 127, '#17304a50', 2);
+    line(layer, 29, 105, 232, 105, '#17304a50', 2, stage(p, .14, .38));
+    line(layer, 29, 127, 202, 127, '#17304a50', 2, stage(p, .22, .46));
   });
 
   card(ctx, { x: 173, y: 162, width: 309, height: 147, angle: .055, fill: peach, edge: ochre }, (layer, width, height) => {
-    line(layer, 0, height, width / 2, 44, '#a94e3550', 2);
-    line(layer, width, height, width / 2, 44, '#a94e3550', 2);
+    line(layer, 0, height, width / 2, 44, '#a94e3550', 2, stage(p, .12, .43));
+    line(layer, width, height, width / 2, 44, '#a94e3550', 2, stage(p, .12, .43));
     layer.beginPath();
     layer.moveTo(0, 0);
     layer.lineTo(width, 0);
@@ -162,18 +195,20 @@ function drawMessage(ctx, offset) {
     layer.strokeStyle = ochre;
     layer.lineWidth = 1.5;
     layer.stroke();
-    dot(layer, width / 2, 87, 23, cobalt);
-    line(layer, 145, 89, 151, 95, cream, 2.5);
-    line(layer, 151, 95, 165, 79, cream, 2.5);
+    dot(layer, width / 2, 87, 23 * stage(p, .4, .65), cobalt);
+    line(layer, 145, 89, 151, 95, cream, 2.5, stage(p, .61, .73));
+    line(layer, 151, 95, 165, 79, cream, 2.5, stage(p, .73, .9));
   });
 
   ctx.save();
   ctx.translate(474 + offset, 111);
   ctx.rotate(.18);
-  for (const y of [0, 12, 24]) {
+  for (const [index, y] of [0, 12, 24].entries()) {
+    const wave = stage(p, .61 + index * .09, .8 + index * .09);
+    if (!wave) continue;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.quadraticCurveTo(23, y - 14, 46, y);
+    quadraticTo(ctx, [0, y], [23, y - 14], [46, y], wave);
     ctx.strokeStyle = cobalt;
     ctx.lineWidth = 2.2;
     ctx.stroke();
@@ -181,7 +216,7 @@ function drawMessage(ctx, offset) {
   ctx.restore();
 }
 
-function drawRecovery(ctx, offset) {
+function drawRecovery(ctx, p, offset) {
   cropMarks(ctx, 56, 35, 488, 288);
   card(ctx, { x: 125, y: 54, width: 349, height: 216, angle: .095, fill: softBlue, edge: cobalt }, (layer, width, height) => {
     cropMarks(layer, 16, 16, width - 32, height - 32, '#2b58bb65');
@@ -192,19 +227,23 @@ function drawRecovery(ctx, offset) {
     line(layer, 0, 48, width, 48, guide);
     label(layer, 'Recovery code', 24, 95, { font: '31px Georgia, serif' });
     rect(layer, 22, 116, 218, 48, 6, softBlue, '#2b58bb70');
-    for (const x of [49, 82, 115, 148, 181, 214]) dot(layer, x, 140, 3.8, cobalt);
-    line(layer, 24, 191, 135, 191, guide, 3);
-    layer.lineWidth = 4;
-    layer.strokeStyle = moss;
-    layer.beginPath();
-    layer.arc(306, 27, 8, Math.PI, 0);
-    layer.stroke();
+    for (const [index, x] of [49, 82, 115, 148, 181, 214].entries()) {
+      const start = .13 + index * .065;
+      dot(layer, x, 140, 3.8 * stage(p, start, start + .16), cobalt);
+    }
+    line(layer, 24, 191, 135, 191, guide, 3, stage(p, 0, .29));
+    arc(layer, 306, 27, 8, Math.PI, 2 * Math.PI, moss, 4, stage(p, .04, .37));
     rect(layer, 293, 27, 26, 18, 4, moss);
   });
 
   ctx.save();
   ctx.translate(437 + offset, 207 + offset / 2);
   ctx.rotate(-.63);
+  // Reveal the key from round bow to teeth as if it were inked left to right.
+  const key = stage(p, .38, .93);
+  ctx.beginPath();
+  ctx.rect(-78, -42, 185 * key, 84);
+  ctx.clip();
   ctx.beginPath();
   ctx.arc(-36, 0, 40, Math.PI * .38, Math.PI * 1.62);
   ctx.lineTo(93, -15);
@@ -227,31 +266,41 @@ function drawRecovery(ctx, offset) {
   ctx.lineWidth = 2;
   ctx.strokeStyle = ink;
   ctx.stroke();
-  line(ctx, -13, -8, 84, -8, '#e2edfe7a', 1.6);
+  line(ctx, -13, -8, 84, -8, '#e2edfe7a', 1.6, stage(p, .64, 1));
   ctx.restore();
 }
 
-function drawVisitors(ctx, offset) {
+const visitorCurve = [
+  [[29, 159], [60, 165], [67, 119], [105, 125]],
+  [[105, 125], [141, 133], [148, 150], [174, 129]],
+  [[174, 129], [203, 107], [216, 107], [253, 95]],
+];
+
+function drawVisitors(ctx, p, offset) {
   cropMarks(ctx, 48, 35, 505, 291);
   card(ctx, { x: 68, y: 61, width: 320, height: 221, angle: -.062, fill: cream }, (layer, width) => {
     label(layer, 'Day', 23, 51, { font: '28px Georgia, serif' });
-    line(layer, 23, 65, width - 24, 65, guide);
+    line(layer, 23, 65, width - 24, 65, guide, 1.5, stage(p, 0, .19));
     for (const y of [90, 133, 176]) line(layer, 23, y, 267, y, guide);
     for (const x of [27, 84, 141, 198, 255]) line(layer, x, 89, x, 177, guide);
-    layer.beginPath();
-    layer.moveTo(29, 159);
-    layer.bezierCurveTo(60, 165, 67, 119, 105, 125);
-    layer.bezierCurveTo(141, 133, 148, 150, 174, 129);
-    layer.bezierCurveTo(203, 107, 216, 107, 253, 95);
-    layer.strokeStyle = cobalt;
-    layer.lineWidth = 4;
-    layer.setLineDash([5, 7]);
-    layer.stroke();
-    layer.setLineDash([]);
-    dot(layer, 29, 159, 4.5, cobalt);
-    dot(layer, 105, 125, 4.5, cobalt);
-    dot(layer, 174, 129, 4.5, cobalt);
-    dot(layer, 253, 95, 5.5, ochre);
+    const route = stage(p, .16, .83) * visitorCurve.length;
+    if (route > 0) {
+      layer.beginPath();
+      layer.moveTo(...visitorCurve[0][0]);
+      for (const [index, points] of visitorCurve.entries()) {
+        if (route <= index) break;
+        cubicTo(layer, ...points, Math.min(1, route - index));
+      }
+      layer.strokeStyle = cobalt;
+      layer.lineWidth = 4;
+      layer.setLineDash([5, 7]);
+      layer.stroke();
+      layer.setLineDash([]);
+    }
+    dot(layer, 29, 159, 4.5 * stage(route, 0, .27), cobalt);
+    dot(layer, 105, 125, 4.5 * stage(route, 1, 1.27), cobalt);
+    dot(layer, 174, 129, 4.5 * stage(route, 2, 2.27), cobalt);
+    dot(layer, 253, 95, 5.5 * stage(p, .8, .93), ochre);
   });
 
   card(ctx, { x: 330, y: 108, width: 199, height: 185, angle: .11, fill: softBlue, edge: cobalt }, (layer, width) => {
@@ -261,7 +310,9 @@ function drawVisitors(ctx, offset) {
     for (let row = 0; row < 4; row++) {
       for (let column = 0; column < 7; column++) {
         const selected = (row === 1 && column === 3) || (row === 2 && column === 4) || (row === 3 && column === 5);
-        dot(layer, 35 + column * 21, 88 + row * 20, selected ? 4.5 : 2.2, selected ? cobalt : '#8aa9dc');
+        const start = .20 + (row * 7 + column) * .019;
+        const radius = (selected ? 4.5 : 2.2) * stage(p, start, start + .15);
+        dot(layer, 35 + column * 21, 88 + row * 20, radius, selected ? cobalt : '#8aa9dc');
       }
     }
   });
@@ -269,13 +320,13 @@ function drawVisitors(ctx, offset) {
   ctx.save();
   ctx.translate(offset, offset / 2);
   ctx.lineWidth = 1.5;
-  dot(ctx, 490, 82, 22, mint, moss);
-  line(ctx, 482, 82, 487, 87, moss, 2.4);
-  line(ctx, 487, 87, 499, 76, moss, 2.4);
+  dot(ctx, 490, 82, 22 * stage(p, .67, .85), mint, moss);
+  line(ctx, 482, 82, 487, 87, moss, 2.4, stage(p, .8, .89));
+  line(ctx, 487, 87, 499, 76, moss, 2.4, stage(p, .89, 1));
   ctx.restore();
 }
 
-function drawRadio(ctx, offset) {
+function drawRadio(ctx, p, offset) {
   ctx.save();
   ctx.translate(285, 187);
   ctx.rotate(-.16);
@@ -310,30 +361,30 @@ function drawRadio(ctx, offset) {
   ctx.strokeStyle = '#2b58bb55';
   ctx.lineWidth = 1.8;
   ctx.beginPath();
-  for (const width of [60, 103]) {
+  for (const [index, width] of [60, 103].entries()) {
+    const globeLine = stage(p, .06 + index * .08, .46 + index * .08);
+    if (!globeLine) continue;
     ctx.moveTo(width, 0);
-    ctx.ellipse(0, 0, width, 129, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, width, 129, 0, 0, Math.PI * 2 * globeLine);
   }
-  for (const y of [-71, -24, 27, 76]) {
+  for (const [index, y] of [-71, -24, 27, 76].entries()) {
+    const globeLine = stage(p, .13 + index * .047, .49 + index * .047);
+    if (!globeLine) continue;
     ctx.moveTo(-131, y);
-    ctx.quadraticCurveTo(0, y + 32, 131, y);
+    quadraticTo(ctx, [-131, y], [0, y + 32], [131, y], globeLine);
   }
   ctx.stroke();
   ctx.restore();
-  dot(ctx, -69, -29, 7, cobalt);
-  dot(ctx, -23, 55, 6, cobalt);
+  dot(ctx, -69, -29, 7 * stage(p, .36, .54), cobalt);
+  dot(ctx, -23, 55, 6 * stage(p, .44, .62), cobalt);
   ctx.restore();
 
   ctx.save();
   ctx.translate(389 + offset * .45, 103);
   ctx.lineWidth = 2;
-  dot(ctx, 0, 0, 8, ochre, cream);
-  ctx.strokeStyle = ochre;
-  ctx.lineWidth = 7;
-  for (const radius of [25, 48, 71]) {
-    ctx.beginPath();
-    ctx.arc(0, 0, radius, -Math.PI / 2, -.05);
-    ctx.stroke();
+  dot(ctx, 0, 0, 8 * stage(p, .5, .69), ochre, cream);
+  for (const [index, radius] of [25, 48, 71].entries()) {
+    arc(ctx, 0, 0, radius, -Math.PI / 2, -.05, ochre, 7, stage(p, .57 + index * .09, .82 + index * .09));
   }
   ctx.restore();
 }
@@ -351,13 +402,14 @@ export function drawUtilityArt(ctx, width, height, kind, progress = 1) {
   if (!drawing || width <= 0 || height <= 0) return;
 
   const scale = Math.min(width / designWidth, height / designHeight);
-  const offset = 12 * (1 - Math.max(0, Math.min(1, progress)));
+  const frame = Math.max(0, Math.min(1, progress));
+  const offset = 12 * (1 - frame);
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.translate((width - designWidth * scale) / 2, (height - designHeight * scale) / 2);
   ctx.scale(scale, scale);
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  drawing(ctx, offset);
+  drawing(ctx, frame, offset);
   ctx.restore();
 }

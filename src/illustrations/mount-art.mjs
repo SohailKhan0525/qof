@@ -18,6 +18,9 @@ const placementKinds = { submit: 'submit', review: 'review', ranking: 'ranking',
 const utilityKinds = { discover: 'discover', contact: 'message', privacy: 'recovery' };
 const canvases = new Map();
 const layoutTargets = new WeakMap();
+const moving = new Set();
+const frameInterval = 1000 / 30;
+let animationFrame = 0;
 
 function createCanvas(className) {
   const canvas = document.createElement('canvas');
@@ -26,75 +29,132 @@ function createCanvas(className) {
   return canvas;
 }
 
-function paint(canvas) {
+function paint(canvas, force = false) {
   const entry = canvases.get(canvas);
-  if (!entry?.active) return;
-  const { clientWidth: width, clientHeight: height } = entry.layout;
+  if (!entry?.active || entry.failed) return;
+  // ResizeObserver owns layout reads. Animation frames reuse the last measured size.
+  if (!force || !entry.painted) {
+    entry.width = entry.layout.clientWidth;
+    entry.height = entry.layout.clientHeight;
+    entry.scale = Math.min(window.devicePixelRatio || 1, 2);
+  }
+  const { width, height, scale } = entry;
   if (width < 1 || height < 1) return;
 
-  if (entry.layout !== canvas) {
+  if (!force && entry.layout !== canvas) {
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
   }
 
-  const scale = Math.min(window.devicePixelRatio || 1, 2);
   const pixelWidth = Math.round(width * scale);
   const pixelHeight = Math.round(height * scale);
-  if (entry.pixelWidth === pixelWidth && entry.pixelHeight === pixelHeight) return;
+  const resized = canvas.width !== pixelWidth || canvas.height !== pixelHeight;
+  if (!force && !resized && entry.painted) return;
 
-  // Resizing resets the bitmap and context, so draw only when the size changes.
-  canvas.width = pixelWidth;
-  canvas.height = pixelHeight;
+  // Only resize the bitmap when layout changes. Every animation frame draws into it.
+  if (resized) {
+    canvas.width = pixelWidth;
+    canvas.height = pixelHeight;
+  }
   entry.ctx.setTransform(pixelWidth / width, 0, 0, pixelHeight / height, 0, 0);
   try {
-    entry.draw(entry.ctx, width, height);
+    entry.draw(entry.ctx, width, height, entry.elapsed / entry.duration);
   } catch (error) {
+    entry.failed = true;
+    moving.delete(canvas);
     entry.host.removeAttribute('data-qofeno-drawn');
     console.warn('A Qofeno illustration used its static fallback.', error);
     return;
   }
-  entry.pixelWidth = pixelWidth;
-  entry.pixelHeight = pixelHeight;
-  entry.host.setAttribute('data-qofeno-drawn', '');
+  if (!entry.painted) {
+    entry.painted = true;
+    entry.host.setAttribute('data-qofeno-drawn', '');
+    entry.host.dataset.qofenoArtPhase = 'ready';
+  }
 }
 
 const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(entries => {
-  for (const entry of entries) paint(layoutTargets.get(entry.target));
+  for (const entry of entries) syncMotion(layoutTargets.get(entry.target));
 }) : null;
 
-const approach = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
+const viewport = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => {
   for (const { target, isIntersecting } of entries) {
-    if (!isIntersecting) continue;
     const canvas = layoutTargets.get(target);
     const entry = canvases.get(canvas);
-    if (entry) {
-      entry.active = true;
-      paint(canvas);
-    }
-    approach.unobserve(target);
+    if (!entry) continue;
+    entry.inViewport = isIntersecting;
+    syncMotion(canvas);
   }
-}, { rootMargin: '160px 0px' }) : null;
+}, { threshold: .1 }) : null;
 
-function mount(host, canvas, draw, { content = canvas, layout = canvas, kind } = {}) {
+function scheduleFrame() {
+  if (!animationFrame && moving.size && !document.hidden) {
+    animationFrame = requestAnimationFrame(animate);
+  }
+}
+
+function animate(time) {
+  animationFrame = 0;
+  if (document.hidden) return;
+  // Bound concurrent drawing work when several cards share one viewport.
+  for (const canvas of [...moving].slice(0, 3)) {
+    const entry = canvases.get(canvas);
+    if (entry.host.dataset.qofenoArtPhase !== 'drawing') entry.host.dataset.qofenoArtPhase = 'drawing';
+    entry.lastFrame ??= time;
+    const delta = time - entry.lastFrame;
+    if (delta < frameInterval - 1) continue;
+    entry.lastFrame = time;
+    entry.elapsed = Math.min(entry.elapsed + Math.min(delta, 70), entry.duration);
+    paint(canvas, true);
+    if (entry.elapsed === entry.duration) {
+      moving.delete(canvas);
+      entry.host.dataset.qofenoArtPhase = 'settled';
+    }
+  }
+  scheduleFrame();
+}
+
+function syncMotion(canvas) {
+  const entry = canvases.get(canvas);
+  if (!entry) return;
+  const visible = entry.inViewport && !document.hidden &&
+    !entry.host.closest('[inert], dialog:not([open]), .qofeno-navigation-panel[data-open="false"]') &&
+    !(entry.kind === 'radio' && entry.host.closest('.product-tour:not([data-tour-chapter="0"])'));
+  entry.active ||= visible;
+  paint(canvas);
+  if (!visible || !entry.painted || entry.failed || entry.elapsed === entry.duration) {
+    if (moving.delete(canvas)) {
+      entry.lastFrame = null;
+      entry.host.dataset.qofenoArtPhase = 'paused';
+    }
+    return;
+  }
+  moving.add(canvas);
+  scheduleFrame();
+}
+
+function mount(host, canvas, draw, { content = canvas, layout = canvas, kind, duration = 1260 } = {}) {
   if ([...canvases.values()].some(entry => entry.host === host)) return;
   host.append(content);
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const active = layout === canvas || !approach;
-  canvases.set(canvas, { ctx, host, draw, layout, kind, active });
+  const active = layout === canvas || !viewport;
+  canvases.set(canvas, { ctx, host, draw, layout, kind, active, duration, elapsed: 0, inViewport: !viewport });
   layoutTargets.set(layout, canvas);
   resize.observe(layout);
-  if (!active) approach.observe(layout);
-  paint(canvas);
+  viewport?.observe(layout);
+  syncMotion(canvas);
 }
 
 function forget(canvas) {
   const { host, layout } = canvases.get(canvas);
   resize.unobserve(layout);
-  approach?.unobserve(layout);
+  viewport?.unobserve(layout);
   layoutTargets.delete(layout);
+  moving.delete(canvas);
   canvases.delete(canvas);
   host.removeAttribute('data-qofeno-drawn');
+  host.removeAttribute('data-qofeno-art-phase');
 }
 
 function mountHero(hero) {
@@ -115,7 +175,7 @@ function mountHero(hero) {
   link.append(arrow);
   caption.append(link);
   figure.append(frame, caption);
-  mount(hero, canvas, drawFieldGuide, { content: figure });
+  mount(hero, canvas, drawFieldGuide, { content: figure, duration: 1580 });
 }
 
 function mountScene(svg) {
@@ -136,7 +196,7 @@ function mountScene(svg) {
   const canvas = createCanvas('qofeno-scene-canvas');
   canvas.dataset.qofenoScene = kind;
   const painter = placementKind ? drawPlacementArt : drawUtilityArt;
-  mount(host, canvas, (ctx, width, height) => painter(ctx, width, height, kind), { layout: svg, kind });
+  mount(host, canvas, (ctx, width, height, progress) => painter(ctx, width, height, kind, progress), { layout: svg, kind });
 }
 
 function refreshArt() {
@@ -153,19 +213,20 @@ function refreshArt() {
 
   const closing = root.querySelector('.reference-closing-orbit');
   if (closing && !closing.querySelector('.qofeno-closing-canvas')) {
-    mount(closing, createCanvas('qofeno-closing-canvas'), (ctx, width, height) =>
-      drawFieldGuide(ctx, width, height, 1, { variant: 'closing' }));
+    mount(closing, createCanvas('qofeno-closing-canvas'), (ctx, width, height, progress) =>
+      drawFieldGuide(ctx, width, height, progress, { variant: 'closing' }));
   }
 
   for (const mark of root.querySelectorAll(markSelector)) {
     const kind = markKinds[mark.closest('.discovery-row').dataset.placementId];
     if (!kind || mark.querySelector('.qofeno-discovery-canvas')) continue;
     mark.dataset.qofenoKind = kind;
-    mount(mark, createCanvas('qofeno-discovery-canvas'), (ctx, width, height) =>
-      drawDiscoveryMark(ctx, width, height, kind));
+    mount(mark, createCanvas('qofeno-discovery-canvas'), (ctx, width, height, progress) =>
+      drawDiscoveryMark(ctx, width, height, kind, progress), { duration: 920 });
   }
 
   for (const svg of root.querySelectorAll(sceneSelector)) mountScene(svg);
+  for (const canvas of canvases.keys()) syncMotion(canvas);
 }
 
 if (root && resize) {
@@ -181,6 +242,13 @@ if (root && resize) {
       queued = false;
       refreshArt();
     });
-  }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-interface-illustration'] });
+  }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-interface-illustration', 'data-open', 'data-tour-chapter', 'inert', 'open'] });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+    }
+    for (const canvas of canvases.keys()) syncMotion(canvas);
+  });
   refreshArt();
 }

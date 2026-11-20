@@ -50,7 +50,7 @@ The configs preserve the original database UUIDs, independent visitor databases,
 
 `npm run deploy` uses `wrangler deploy --keep-vars`. In the pinned Wrangler 4.156.2 implementation, deployments retain existing secret bindings; `--keep-vars` additionally retains existing plaintext/JSON variables. No secret values should be added to the configuration, browser assets or repository. The existing deployment holds the Dodo, owner, visitor and other previously configured secrets.
 
-The publicly inaccessible `_headers` source could not be downloaded. Its global security policy and immutable `/assets/*` caching were reconstructed from observed live response headers. This matters because `/assets/*` is served before the Worker and does not inherit headers merely by preserving the Worker code.
+The global asset security policy was reconstructed from observed live response headers. The build generates immutable cache rules for the files it emits and adds SHA-384 integrity hashes to the script and stylesheet entry tags. The asset service returns 404 for unknown files, while the Worker handles application routes. This keeps missing assets from receiving a cacheable copy of the application shell.
 
 ## Current verification
 

@@ -5,6 +5,7 @@ const coral = '#e9946b';
 const mint = '#a8d3bd';
 const designWidth = 620;
 const designHeight = 455;
+const grainPaths = new Map();
 
 function roundedRect(ctx, x, y, width, height, radius, fill, stroke) {
   ctx.beginPath();
@@ -38,6 +39,51 @@ function line(ctx, x1, y1, x2, y2) {
   ctx.lineTo(x2, y2);
 }
 
+function stage(progress, start, end) {
+  const fraction = Math.max(0, Math.min(1, (progress - start) / (end - start)));
+  return fraction * fraction * (3 - 2 * fraction);
+}
+
+function traceLine(ctx, x1, y1, x2, y2, progress) {
+  if (progress > 0) line(ctx, x1, y1, x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress);
+}
+
+function traceLatitude(ctx, y, progress) {
+  if (progress <= 0) return;
+  const controlX = -111 + 111 * progress;
+  const controlY = y + 31 * progress;
+  ctx.moveTo(-111, y);
+  ctx.quadraticCurveTo(controlX, controlY, controlX + 111 * progress, controlY + 31 * progress * (1 - 2 * progress));
+}
+
+function traceStroke(ctx, length, progress) {
+  if (progress <= 0) return;
+  if (progress >= 1) {
+    ctx.stroke();
+    return;
+  }
+  ctx.save();
+  ctx.setLineDash([length * progress, length]);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function printText(ctx, text, x, y, progress) {
+  if (progress <= 0) return;
+  if (progress >= 1) {
+    ctx.fillText(text, x, y);
+    return;
+  }
+  const width = ctx.measureText(text).width;
+  const left = ctx.textAlign === 'center' ? x - width / 2 : x;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(left - 2, y - 55, (width + 4) * progress, 65);
+  ctx.clip();
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
 function paper(ctx, x, y, width, height, tilt, fill, edge, paint) {
   ctx.save();
   ctx.translate(x + width / 2, y + height / 2);
@@ -54,16 +100,24 @@ function paper(ctx, x, y, width, height, tilt, fill, edge, paint) {
 
 function grain(ctx, width, height, color) {
   ctx.fillStyle = color;
-  ctx.beginPath();
-  for (let i = 0; i < 460; i++) {
-    const x = ((i * 173) % 457) / 457 * width;
-    const y = ((i * 127 + i * i * 7) % 463) / 463 * height;
-    ctx.rect(x, y, i % 5 === 0 ? 1.5 : .8, .7);
+  const key = `${width}:${height}`;
+  let texture = grainPaths.get(key);
+  if (!texture) {
+    // Keep resize-driven cover sizes from growing this cache indefinitely.
+    if (grainPaths.size >= 16) grainPaths.delete(grainPaths.keys().next().value);
+    texture = new Path2D();
+    for (let i = 0; i < 460; i++) {
+      const x = ((i * 173) % 457) / 457 * width;
+      const y = ((i * 127 + i * i * 7) % 463) / 463 * height;
+      texture.rect(x, y, i % 5 === 0 ? 1.5 : .8, .7);
+    }
+    grainPaths.set(key, texture);
   }
-  ctx.fill();
+  ctx.fill(texture);
 }
 
 function star(ctx, x, y, radius, color) {
+  if (radius <= 0) return;
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(x, y - radius);
@@ -74,19 +128,22 @@ function star(ctx, x, y, radius, color) {
   ctx.fill();
 }
 
-function radioWaves(ctx, x, y, size, color) {
+function radioWaves(ctx, x, y, size, color, progress = 1) {
   ctx.strokeStyle = color;
   ctx.lineWidth = size / 11;
   ctx.beginPath();
-  for (const radius of [size * .48, size * .75, size]) {
+  const radii = [size * .48, size * .75, size];
+  for (const [index, radius] of radii.entries()) {
+    const extension = stage(progress, index * .16, .54 + index * .16);
+    if (extension <= 0) continue;
     ctx.moveTo(x + Math.cos(-1.36) * radius, y + Math.sin(-1.36) * radius);
-    ctx.arc(x, y, radius, -1.36, -.21);
+    ctx.arc(x, y, radius, -1.36, -1.36 + 1.15 * extension);
   }
   ctx.stroke();
-  circle(ctx, x, y, size / 8, color);
+  circle(ctx, x, y, size / 8 * stage(progress, 0, .3), color);
 }
 
-function openBook(ctx, x, y, size, color) {
+function openBook(ctx, x, y, size, color, progress = 1) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(size / 64, size / 64);
@@ -101,27 +158,31 @@ function openBook(ctx, x, y, size, color) {
   ctx.lineTo(59, 42);
   ctx.bezierCurveTo(50, 41, 39, 40, 32, 48);
   line(ctx, 32, 20, 32, 48);
-  ctx.stroke();
+  traceStroke(ctx, 170, stage(progress, 0, .67));
   ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  for (const height of [22, 28, 34]) {
+  for (const [index, height] of [22, 28, 34].entries()) {
+    ctx.beginPath();
     ctx.moveTo(11, height);
     ctx.quadraticCurveTo(20, height - 2, 26, height + 2);
     ctx.moveTo(38, height + 2);
     ctx.quadraticCurveTo(44, height - 2, 53, height);
+    traceStroke(ctx, 17, stage(progress, .41 + index * .09, .8 + index * .09));
   }
-  ctx.stroke();
   ctx.restore();
 }
 
-function windowScene(ctx, x, y, width, height) {
+function windowScene(ctx, x, y, width, height, progress = 1) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(width / 100, height / 100);
   ctx.lineWidth = 1.6;
   roundedRect(ctx, 0, 0, 100, 100, 3, '#f9da99', ink);
   ctx.clip();
-  circle(ctx, 68, 31, 13, coral);
+  circle(ctx, 68, 31, 13 * stage(progress, .14, .55), coral);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, 100 * stage(progress, 0, .66), 100);
+  ctx.clip();
   ctx.fillStyle = '#92bba5';
   ctx.beginPath();
   ctx.moveTo(0, 76);
@@ -138,10 +199,11 @@ function windowScene(ctx, x, y, width, height) {
   ctx.lineTo(100, 100);
   ctx.lineTo(0, 100);
   ctx.fill();
+  ctx.restore();
   ctx.beginPath();
   ctx.strokeStyle = ink;
-  line(ctx, 50, 0, 50, 100);
-  line(ctx, 0, 51, 100, 51);
+  traceLine(ctx, 50, 0, 50, 100, stage(progress, .35, .8));
+  traceLine(ctx, 0, 51, 100, 51, stage(progress, .5, 1));
   ctx.stroke();
   ctx.restore();
 }
@@ -198,7 +260,7 @@ function landforms(ctx) {
   ctx.fill();
 }
 
-function globe(ctx, x, y) {
+function globe(ctx, x, y, progress = 1) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-.21);
@@ -206,24 +268,34 @@ function globe(ctx, x, y) {
   circle(ctx, 0, 0, 108, cream, '#173b83');
   ctx.save();
   ctx.clip();
+  const mapProgress = stage(progress, 0, .59);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-108, -108, 216 * mapProgress, 216);
+  ctx.clip();
   landforms(ctx);
+  ctx.restore();
   ctx.strokeStyle = '#315e8e60';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.ellipse(0, 0, 73, 108, 0, 0, Math.PI * 2);
-  ctx.moveTo(33, 0);
-  ctx.ellipse(0, 0, 33, 108, 0, 0, Math.PI * 2);
-  line(ctx, 0, -108, 0, 108);
-  for (const latitude of [-63, -28, 10, 51]) {
-    ctx.moveTo(-111, latitude);
-    ctx.quadraticCurveTo(0, latitude + 31, 111, latitude);
+  for (const [index, longitude] of [73, 33].entries()) {
+    const sweep = stage(progress, .1 + index * .12, .64 + index * .1);
+    if (sweep <= 0) continue;
+    ctx.moveTo(longitude, 0);
+    ctx.ellipse(0, 0, longitude, 108, 0, 0, Math.PI * 2 * sweep);
+  }
+  traceLine(ctx, 0, -108, 0, 108, stage(progress, .24, .72));
+  for (const [index, latitude] of [-63, -28, 10, 51].entries()) {
+    traceLatitude(ctx, latitude, stage(progress, .13 + index * .075, .57 + index * .075));
   }
   ctx.stroke();
   ctx.restore();
 
-  circle(ctx, -36, -23, 7, coral, cream);
-  circle(ctx, 50, -34, 6, '#2b58bb', cream);
-  circle(ctx, 27, 43, 4, '#2b58bb', cream);
+  const points = [[-36, -23, 7, coral], [50, -34, 6, cobalt], [27, 43, 4, cobalt]];
+  for (const [index, [pinX, pinY, radius, colour]] of points.entries()) {
+    const stamped = stage(progress, .45 + index * .095, .64 + index * .095);
+    if (stamped > 0) circle(ctx, pinX, pinY, radius * stamped, colour, cream);
+  }
   ctx.restore();
 }
 
@@ -233,58 +305,61 @@ function radioSheet(ctx, width, height, progress) {
   roundedRect(ctx, 13, 13, width - 26, height - 26, 3, null, '#edf5ff79');
   ctx.strokeStyle = '#e9f0ff69';
   ctx.beginPath();
-  line(ctx, 26, 65, width - 26, 65);
-  line(ctx, 26, height - 72, width - 26, height - 72);
+  traceLine(ctx, 26, 65, width - 26, 65, stage(progress, .02, .42));
+  traceLine(ctx, 26, height - 72, width - 26, height - 72, stage(progress, .43, .86));
   ctx.stroke();
   ctx.font = '600 13px "DM Sans", Arial, sans-serif';
   ctx.fillStyle = cream;
-  ctx.fillText('FIELD GUIDE TO THE WEB', 27, 46);
+  printText(ctx, 'FIELD GUIDE TO THE WEB', 27, 46, stage(progress, .03, .49));
 
   const globeX = 176;
   const globeY = 198;
-  ctx.strokeStyle = '#a4bded75';
+  ctx.strokeStyle = '#a4bdedb5';
   ctx.setLineDash([2, 5]);
-  circle(ctx, globeX, globeY, 121, null, '#a4bdedb5');
+  ctx.beginPath();
+  ctx.arc(globeX, globeY, 121, 0, Math.PI * 2 * stage(progress, .15, .88));
+  ctx.stroke();
   ctx.setLineDash([]);
-  star(ctx, 46, 113, 8, cream);
-  star(ctx, 295, 241, 13, '#ffcf76');
-  star(ctx, 60, 269, 6, '#ffcf76');
-  globe(ctx, globeX, globeY);
-  // A printed station marker and its signal are visible throughout the entrance.
-  radioWaves(ctx, 227, 163, 34 + 4 * progress, '#a84225');
+  star(ctx, 46, 113, 8 * stage(progress, .32, .53), cream);
+  star(ctx, 295, 241, 13 * stage(progress, .59, .84), '#ffcf76');
+  star(ctx, 60, 269, 6 * stage(progress, .53, .73), '#ffcf76');
+  globe(ctx, globeX, globeY, stage(progress, 0, .88));
+  radioWaves(ctx, 227, 163, 38, '#a84225', stage(progress, .45, 1));
 
   ctx.fillStyle = cream;
   ctx.font = '400 37px Georgia, serif';
-  ctx.fillText('Radio Garden', 60, height - 30);
+  printText(ctx, 'Radio Garden', 60, height - 30, stage(progress, .43, .9));
 }
 
-function windowSheet(ctx, width, height) {
+function windowSheet(ctx, width, height, progress) {
   grain(ctx, width, height, '#af4d2833');
   roundedRect(ctx, 12, 12, width - 24, height - 24, 2, null, '#a95b46');
   ctx.strokeStyle = '#a95b46';
   ctx.beginPath();
-  line(ctx, 25, 49, width - 25, 49);
-  line(ctx, 25, height - 58, width - 25, height - 58);
+  traceLine(ctx, 25, 49, width - 25, 49, stage(progress, 0, .6));
+  traceLine(ctx, 25, height - 58, width - 25, height - 58, stage(progress, .35, 1));
   ctx.stroke();
-  windowScene(ctx, 25, 66, width - 50, height - 143);
+  windowScene(ctx, 25, 66, width - 50, height - 143, progress);
 }
 
-function bookSheet(ctx, width, height) {
+function bookSheet(ctx, width, height, progress) {
   grain(ctx, width, height, '#315d4f2e');
   roundedRect(ctx, 9, 9, width - 18, height - 18, 3, null, '#618a7c');
-  openBook(ctx, 54, 9, 58, '#28564c');
+  openBook(ctx, 54, 9, 58, '#28564c', progress);
   ctx.fillStyle = '#20483f';
   ctx.font = '400 17px Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Standard Ebooks', width / 2, height - 21);
+  printText(ctx, 'Standard Ebooks', width / 2, height - 21, stage(progress, .36, 1));
 }
 
 function hero(ctx, progress) {
   const unsettled = 1 - progress;
-  paper(ctx, 393 - 9 * unsettled, 91, 181, 278, .15 - .045 * unsettled, '#f2ab88', '#9b5945', windowSheet);
+  paper(ctx, 393 - 9 * unsettled, 91, 181, 278, .15 - .045 * unsettled, '#f2ab88', '#9b5945',
+    (surface, width, height) => windowSheet(surface, width, height, stage(progress, .08, .78)));
   paper(ctx, 137, 37 + 8 * unsettled, 353, 378, -.082 + .035 * unsettled, cobalt, '#214389',
     (surface, width, height) => radioSheet(surface, width, height, progress));
-  paper(ctx, 28 + 7 * unsettled, 291 - 3 * unsettled, 167, 110, -.16 + .045 * unsettled, mint, '#618a7c', bookSheet);
+  paper(ctx, 28 + 7 * unsettled, 291 - 3 * unsettled, 167, 110, -.16 + .045 * unsettled, mint, '#618a7c',
+    (surface, width, height) => bookSheet(surface, width, height, stage(progress, .22, .96)));
 }
 
 function envelope(ctx, progress) {
@@ -292,6 +367,10 @@ function envelope(ctx, progress) {
   paper(ctx, 154, 72 + 6 * unsettled, 330, 291, -.094, cream, '#c7b69b', (surface, width, height) => {
     grain(surface, width, height, '#87674c2a');
     roundedRect(surface, 14, 14, width - 28, height - 28, 3, null, '#c7b69b');
+    surface.save();
+    surface.beginPath();
+    surface.rect(31, 107, 205 * stage(progress, .19, .72), 131);
+    surface.clip();
     surface.strokeStyle = '#b69477';
     surface.lineWidth = 1.2;
     surface.setLineDash([3, 6]);
@@ -299,20 +378,26 @@ function envelope(ctx, progress) {
     surface.moveTo(32, 235);
     surface.bezierCurveTo(162, 233, 121, 150, 228, 112);
     surface.stroke();
-    surface.setLineDash([]);
-    circle(surface, 228, 112, 5, coral, '#a85436');
+    surface.restore();
+    const mark = stage(progress, .65, .86);
+    surface.lineWidth = 1.2;
+    if (mark > 0) circle(surface, 228, 112, 5 * mark, coral, '#a85436');
     surface.fillStyle = ink;
     surface.font = '400 32px Georgia, serif';
-    surface.fillText('From the open web', 29, 72);
+    printText(surface, 'From the open web', 29, 72, stage(progress, .07, .66));
   });
   paper(ctx, 113 - 5 * unsettled, 179, 376, 205, .087, cobalt, '#214389', (surface, width, height) => {
     grain(surface, width, height, '#ffffff29');
     surface.strokeStyle = '#a7bfec';
     surface.lineWidth = 1.5;
     surface.beginPath();
-    line(surface, 2, height - 2, width / 2, 76);
-    line(surface, width / 2, 76, width - 2, height - 2);
+    traceLine(surface, 2, height - 2, width / 2, 76, stage(progress, .03, .48));
+    traceLine(surface, width / 2, 76, width - 2, height - 2, stage(progress, .35, .73));
     surface.stroke();
+    surface.save();
+    surface.beginPath();
+    surface.rect(0, 0, width, 126 * stage(progress, 0, .57));
+    surface.clip();
     surface.fillStyle = '#3d6acb';
     surface.beginPath();
     surface.moveTo(0, 0);
@@ -320,9 +405,11 @@ function envelope(ctx, progress) {
     surface.lineTo(width / 2, 126);
     surface.closePath();
     surface.fill();
-    surface.stroke();
-    circle(surface, width / 2, 118, 24, cream, '#214389');
-    star(surface, width / 2, 118, 12, cobalt);
+    surface.restore();
+    traceStroke(surface, 830, stage(progress, .22, .76));
+    const seal = stage(progress, .68, .95);
+    if (seal > 0) circle(surface, width / 2, 118, 24 * seal, cream, '#214389');
+    star(surface, width / 2, 118, 12 * stage(progress, .78, 1), cobalt);
   });
 }
 
@@ -353,7 +440,7 @@ const marks = {
 };
 
 /** Each editorial pick gets its own drawing, keyed by the kind of site. */
-export function drawDiscoveryMark(ctx, width, height, kind) {
+export function drawDiscoveryMark(ctx, width, height, kind, progress = 1) {
   ctx.clearRect(0, 0, width, height);
   if (width <= 0 || height <= 0) return;
   const key = kind === 'books' ? 'book' : kind;
@@ -387,33 +474,35 @@ export function drawDiscoveryMark(ctx, width, height, kind) {
   ctx.lineCap = 'round';
   if (!isCover) roundedRect(ctx, 0, 0, 64, 64, 7, palette.paper);
   if (key === 'book') {
-    openBook(ctx, 9, 10, 46, palette.ink);
+    openBook(ctx, 9, 10, 46, palette.ink, progress);
   } else if (key === 'radio') {
     if (isCover) {
       ctx.save();
       ctx.translate(31, 32);
       ctx.scale(.19, .19);
-      globe(ctx, 0, 0);
-      radioWaves(ctx, 50, -28, 41, '#a84225');
+      globe(ctx, 0, 0, stage(progress, 0, .83));
+      radioWaves(ctx, 50, -28, 41, '#a84225', stage(progress, .37, 1));
       ctx.restore();
-    } else radioWaves(ctx, 20, 45, 26, palette.ink);
+    } else radioWaves(ctx, 20, 45, 26, palette.ink, progress);
   } else if (key === 'window') {
-    windowScene(ctx, 12, 12, 40, 40);
+    windowScene(ctx, 12, 12, 40, 40, progress);
   } else if (key === 'type') {
     ctx.fillStyle = palette.ink;
     ctx.font = '400 36px Georgia, serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Aa', 32, 44);
+    printText(ctx, 'Aa', 32, 44, stage(progress, .04, .94));
   } else if (key === 'play') {
-    star(ctx, 27, 33, 14, palette.ink);
-    star(ctx, 44, 20, 7, '#bd7c42');
-    circle(ctx, 45, 43, 4, '#bd7c42');
+    star(ctx, 27, 33, 14 * stage(progress, 0, .62), palette.ink);
+    star(ctx, 44, 20, 7 * stage(progress, .31, .8), '#bd7c42');
+    circle(ctx, 45, 43, 4 * stage(progress, .58, .93), '#bd7c42');
   } else {
-    roundedRect(ctx, 14, 25, 36, 23, 3, null, palette.ink);
-    roundedRect(ctx, 12, 17, 40, 9, 2, palette.paper, palette.ink);
-    ctx.beginPath();
+    roundedRect(ctx, 14, 25, 36, 23, 3);
     ctx.strokeStyle = palette.ink;
-    line(ctx, 27, 33, 37, 33);
+    traceStroke(ctx, 115, stage(progress, .05, .73));
+    roundedRect(ctx, 12, 17, 40, 9, 2, palette.paper);
+    traceStroke(ctx, 96, stage(progress, .28, .9));
+    ctx.beginPath();
+    traceLine(ctx, 27, 33, 37, 33, stage(progress, .67, .99));
     ctx.stroke();
   }
   ctx.restore();

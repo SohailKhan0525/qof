@@ -125,7 +125,7 @@ for (const contract of expected) {
     assert.ok(config.compatibility_date === '2026-10-01' && JSON.stringify(config.compatibility_flags) === '["nodejs_compat"]', 'Compatibility settings changed.');
     assert.ok(config.workers_dev === contract.dev && config.preview_urls === false, 'Worker URL exposure differs.');
     assert.ok(config.assets?.directory === 'dist' && config.assets?.binding === 'ASSETS', 'Asset binding changed.');
-    assert.ok(config.assets?.not_found_handling === 'single-page-application', 'SPA handling changed.');
+    assert.ok(config.assets?.not_found_handling === 'none', 'Missing assets must return 404 instead of an HTML fallback.');
     assert.ok(JSON.stringify(config.assets?.run_worker_first) === '["/*","!/assets/*"]', 'Worker-first routes changed.');
     assert.ok(config.d1_databases?.length === 2, 'D1 binding count changed.');
     for (const [binding, [id, name]] of Object.entries(contract.databases)) {
@@ -153,7 +153,7 @@ for (const contract of expected) {
 }
 
 await check('asset security and fingerprinted caching headers are restored', async () => {
-  const headers = (await read('public/_headers')).toString();
+  const headers = (await read('dist/_headers')).toString();
   const rules = new Map(); let current;
   for (const line of headers.split(/\r?\n/)) {
     if (!line.trim() || line.trimStart().startsWith('#')) continue;
@@ -170,8 +170,11 @@ await check('asset security and fingerprinted caching headers are restored', asy
     'x-frame-options': 'DENY', 'strict-transport-security': 'max-age=31536000',
   };
   for (const [header, value] of Object.entries(expectedHeaders)) assert.ok(global?.get(header) === value, `Global asset ${header} differs from the deployed baseline.`);
-  assert.ok(rules.get('/assets/*')?.get('cache-control') === 'public, max-age=31536000, immutable', 'Fingerprint asset cache rule missing.');
-  assert.ok((await read('dist/_headers')).equals(await read('public/_headers')), 'Build has stale asset headers.');
+  assert.equal(rules.has('/assets/*'), false, 'Wildcard cache rules can cache missing files.');
+  const assets = await readdir(path.join(project, 'dist/assets'));
+  for (const asset of assets) {
+    assert.equal(rules.get(`/assets/${asset}`)?.get('cache-control'), 'public, max-age=31536000, immutable', `Missing cache rule for ${asset}.`);
+  }
 });
 await check('deployment command preserves dashboard variables', async () => {
   const pkg = await json('package.json');

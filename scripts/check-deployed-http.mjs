@@ -107,6 +107,14 @@ for (const route of ['/.env', '/wrangler.jsonc', '/vendor/production-worker.mjs'
     return { status: r.status };
   });
 }
+await check('missing scripts, styles and fonts return 404 without immutable HTML', async () => {
+  for (const extension of ['js', 'css', 'woff2']) {
+    const r = await get(`${origin}/assets/qofeno-missing-release-asset.${extension}`);
+    assert.equal(r.status, 404);
+    assert.doesNotMatch(r.headers.get('cache-control') || '', /immutable/);
+    assert.doesNotMatch(await r.text(), /<div[^>]+id="root"/);
+  }
+});
 await check('robots and sitemap follow the environment indexing policy', async () => {
   const robots = await get(origin + '/robots.txt'); assert.equal(robots.status, 200);
   const text = await robots.text();
@@ -135,6 +143,14 @@ await check('canonical index and slash redirects', async () => {
   }
 });
 const assetResponses = [];
+await check('HTML entry assets have valid integrity hashes', async () => {
+  const tags = [...home.matchAll(/<(?:script|link)\b[^>]+(?:src|href)="(\/assets\/[^"\s]+)"[^>]*>/g)];
+  assert.equal(tags.length, 5);
+  for (const [tag, asset] of tags) {
+    const expected = `sha384-${createHash('sha384').update(await read('dist' + asset)).digest('base64')}`;
+    assert.ok(tag.includes(`integrity="${expected}"`), `Missing integrity for ${asset}`);
+  }
+});
 await check('deployed assets match the local build and original recovery hashes', async () => {
   assert.ok(home, 'Home page check did not return a document');
   const assets = new Set([...home.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g)].map(match => match[1]));

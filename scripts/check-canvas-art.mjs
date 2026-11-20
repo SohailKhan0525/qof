@@ -51,13 +51,33 @@ async function checkScene(page, selector, kind) {
   assert.equal(result.hidden, 'true');
 }
 
+async function checkDrawing(page) {
+  const hero = page.locator('.reference-hero');
+  const canvas = hero.locator('.qofeno-field-guide-canvas');
+  const bitmap = () => canvas.evaluate(node => node.toDataURL());
+  await expect(hero).toHaveAttribute('data-qofeno-art-phase', 'drawing');
+  const first = await bitmap();
+  await expect.poll(bitmap).not.toEqual(first);
+  if (await hero.getAttribute('data-qofeno-art-phase') === 'drawing') {
+    await page.evaluate(() => scrollTo({ top: window.innerHeight * 2, behavior: 'instant' }));
+    await expect(hero).toHaveAttribute('data-qofeno-art-phase', 'paused');
+    const paused = await bitmap();
+    await page.waitForTimeout(180);
+    assert.equal(await bitmap(), paused, 'An offscreen illustration should stop drawing');
+    await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+  }
+  await expect(hero).toHaveAttribute('data-qofeno-art-phase', 'settled');
+  assert.notEqual(await bitmap(), first, 'Completed art should contain different pixels');
+}
+
 try {
   for (const width of [1440, 390, 320]) {
     const page = await createPage(width);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto(origin);
+    await page.goto(origin, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.reference-hero[data-qofeno-drawn]')).toBeVisible();
+    if (width === 1440) await checkDrawing(page);
     await expect(page.locator('.discovery-monogram[data-qofeno-drawn]')).toHaveCount(6);
     if (width === 1440) {
       await page.locator('.qofeno-header-trigger').click();

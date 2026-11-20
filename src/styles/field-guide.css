@@ -269,14 +269,3 @@ body .reference-closing-orbit > svg {
 :is([data-interface-illustration], .visitor-activity-art, .tour-radio-art)[data-qofeno-drawn] > svg {
   visibility: hidden;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  [data-qofeno-drawn] > .qofeno-scene-canvas {
-    animation: artwork-settle 580ms cubic-bezier(.22, 1, .36, 1) both;
-  }
-}
-
-@keyframes artwork-settle {
-  from { transform: translateY(6px); }
-  to { transform: translateY(0); }
-}
