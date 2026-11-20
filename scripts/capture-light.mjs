@@ -1,0 +1,9 @@
+import {chromium} from '@playwright/test';import {readFile,writeFile} from 'node:fs/promises';
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const ctx=await browser.newContext({viewport:{width:1440,height:1000}});const page=await ctx.newPage();page.setDefaultTimeout(10000);
+await page.route('**/api/**',async r=>{if(r.request().method()!=='GET')return r.abort();let n=new URL(r.request().url()).pathname.split('/').pop();try{await r.fulfill({contentType:'application/json',body:await readFile('tests/fixtures/'+n+'.json','utf8')})}catch{await r.continue()}});
+await page.goto('http://localhost:8787');await page.waitForTimeout(2000);await page.getByRole('button',{name:'Explore Qofeno',exact:true}).click();await page.waitForTimeout(1200);await page.screenshot({path:'test-results/light-2026-11-20/nav-desktop.png'});await page.keyboard.press('Escape');
+for(const id of ['board','discover','how-it-works','questions']){await page.locator('#'+id).scrollIntoViewIfNeeded();await page.waitForTimeout(1400);await page.screenshot({path:'test-results/light-2026-11-20/'+id+'.png'});}
+await page.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await page.waitForTimeout(1400);await page.screenshot({path:'test-results/light-2026-11-20/footer.png'});
+const data=await page.locator('body').evaluate(root=>Array.from(root.querySelectorAll('*')).filter(e=>{let r=e.getBoundingClientRect(),s=getComputedStyle(e),c=s.backgroundColor.match(/[\d.]+/g);return r.width>70&&r.height>40&&c&&c.length>=3&&Number(c[0])+Number(c[1])+Number(c[2])<350&&(c.length<4||Number(c[3])>.6)&&s.display!=='none'}).map(e=>({tag:e.tagName,class:e.getAttribute('class'),bg:getComputedStyle(e).backgroundColor,text:e.textContent.slice(0,80)})));console.log(JSON.stringify(data,null,2));
+await writeFile('test-results/light-2026-11-20/home-dom.html',await page.locator('body').innerHTML());
+await ctx.close();await browser.close();

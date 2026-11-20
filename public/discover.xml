@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Qofeno — editorial discoveries</title>
+    <link>https://loopproof.me/</link>
+    <description>Interesting independent websites selected for Qofeno’s editorial collection. These are not paid placements and do not affect sponsored rankings.</description>
+    <language>en</language>
+    <lastBuildDate>Sun, 08 Nov 2026 00:00:00 GMT</lastBuildDate>
+    <atom:link href="https://loopproof.me/discover.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>The Public Domain Review</title>
+      <link>https://publicdomainreview.org/</link>
+      <guid isPermaLink="true">https://publicdomainreview.org/</guid>
+      <description>Essays and unusual finds from the history of art, books and ideas. Start with the collections: old maps, curious photographs and forgotten stories. Editorial selection, not a paid placement.</description>
+      <category>reading</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Standard Ebooks</title>
+      <link>https://standardebooks.org/</link>
+      <guid isPermaLink="true">https://standardebooks.org/</guid>
+      <description>Classic books carefully proofread and typeset for a better reading experience. Volunteer-produced editions drawn from texts in the US public domain. Editorial selection, not a paid placement.</description>
+      <category>reading</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Radio Garden</title>
+      <link>https://radio.garden/</link>
+      <guid isPermaLink="true">https://radio.garden/</guid>
+      <description>Turn a globe and listen to live radio stations from different places. Choose a place you have never visited and see what is playing. Editorial selection, not a paid placement.</description>
+      <category>culture</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>WindowSwap</title>
+      <link>https://www.window-swap.com/</link>
+      <guid isPermaLink="true">https://www.window-swap.com/</guid>
+      <description>Look through windows shared by people around the world. A change of scenery, from somebody else’s everyday view. Editorial selection, not a paid placement.</description>
+      <category>culture</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Fonts In Use</title>
+      <link>https://fontsinuse.com/</link>
+      <guid isPermaLink="true">https://fontsinuse.com/</guid>
+      <description>See how typefaces work in real books, posters, packaging and websites. Browse by typeface, format or subject to find the detail you came for. Editorial selection, not a paid placement.</description>
+      <category>design</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Neal.fun</title>
+      <link>https://neal.fun/</link>
+      <guid isPermaLink="true">https://neal.fun/</guid>
+      <description>Small interactive experiments, visualizations and games by Neal. An invitation to click around and find something unexpected. Editorial selection, not a paid placement.</description>
+      <category>other</category>
+      <pubDate>Sun, 08 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

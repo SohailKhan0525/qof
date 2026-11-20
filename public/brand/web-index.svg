@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" fill="none">
+<defs><filter id="paper" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#172f46" flood-opacity=".09"/></filter></defs>
+<path d="M84 119H501V484H84Z" fill="#e6ecf2" transform="rotate(-8 292 301)"/>
+<path d="M88 120H506V488H88Z" fill="#e7ded2" transform="rotate(5 297 304)"/>
+<g filter="url(#paper)">
+<rect x="70" y="83" width="458" height="391" rx="12" fill="#fff" stroke="#b8c6d1"/>
+<path d="M70 135H528" stroke="#d6dddf"/>
+<circle cx="94" cy="110" r="4" fill="#d6dddf"/><circle cx="108" cy="110" r="4" fill="#d6dddf"/><circle cx="122" cy="110" r="4" fill="#d6dddf"/>
+<rect x="193" y="98" width="205" height="24" rx="5" fill="#f0f3f5"/>
+<text x="241" y="114" fill="#526776" font-family="Arial,sans-serif" font-size="11">the independent web</text>
+<text x="101" y="178" fill="#245bc6" font-family="Arial,sans-serif" font-size="11" letter-spacing="1">QOFENO / OPEN INDEX</text>
+<text x="99" y="227" fill="#172f46" font-family="Georgia,serif" font-size="42">A different door.</text>
+<path d="M102 248H494" stroke="#d6dddf"/>
+<rect x="102" y="268" width="66" height="67" rx="7" fill="#e7eefb"/>
+<path d="M121 317V285H149V317M121 294H149M130 285V317M140 285V317" stroke="#245bc6" stroke-width="1.4"/>
+<text x="186" y="291" fill="#172f46" font-family="Georgia,serif" font-size="24">Something to read</text>
+<text x="186" y="316" fill="#607180" font-family="Arial,sans-serif" font-size="12">Stories worth taking your time with</text>
+<path d="M471 291L485 277M471 277H485V291" stroke="#245bc6" stroke-width="1.5"/>
+<path d="M102 353H494" stroke="#d6dddf"/>
+<rect x="102" y="373" width="66" height="67" rx="7" fill="#f4e2d8"/>
+<circle cx="135" cy="406" r="20" stroke="#b34c2e" stroke-width="1.4"/><ellipse cx="135" cy="406" rx="9" ry="20" stroke="#b34c2e" stroke-width="1.4"/><path d="M115 406H155" stroke="#b34c2e" stroke-width="1.4"/>
+<text x="186" y="396" fill="#172f46" font-family="Georgia,serif" font-size="24">Somewhere to wander</text>
+<text x="186" y="421" fill="#607180" font-family="Arial,sans-serif" font-size="12">A small detour from the usual feed</text>
+<path d="M471 396L485 382M471 382H485V396" stroke="#245bc6" stroke-width="1.5"/>
+</g>
+<g transform="translate(408 28) rotate(9)"><rect width="147" height="66" rx="4" fill="#245bc6"/><path d="M10 10H137V56H10Z" stroke="#fff" stroke-opacity=".5" stroke-dasharray="3 3"/><text x="26" y="29" fill="#fff" font-family="Arial,sans-serif" font-size="10" letter-spacing="1.5">THE OPEN WEB</text><text x="29" y="47" fill="#fff" font-family="Georgia,serif" font-size="17">Room for you</text></g>
+<path d="M45 465V485H65M535 465V485H515" stroke="#b1bac1" stroke-width="1.5"/>
+<text x="91" y="526" fill="#657583" font-family="Arial,sans-serif" font-size="12">Independent websites. Individual stories.</text>
+</svg>

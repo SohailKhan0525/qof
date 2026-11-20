@@ -1,0 +1,137 @@
+[
+  {
+    "path": "/apple-touch-icon.png",
+    "bytes": 5699,
+    "sha256": "e8eee9aa698bbd6cbbf29cd8bf79c31fbd849035a5571bc2d6d56060bd502bf7"
+  },
+  {
+    "path": "/assets/index-Dm4cACIa.css",
+    "bytes": 226839,
+    "sha256": "bc0b926ab4d6752c442323b1d381ee0868beb75426d6f1a4dd0fc1c8050c96a7"
+  },
+  {
+    "path": "/assets/index-SEI-Pf69.js",
+    "bytes": 494933,
+    "sha256": "902da42031dc3c3b992bff780c27b12aed6dcc00d70c31cccd07a6be9b609192"
+  },
+  {
+    "path": "/brand/qofeno-icon.svg",
+    "bytes": 1164,
+    "sha256": "bcbfab1c88d8261bdf51dc8e5ff00dc89e3c79f22748f9eae6917c1280070daf"
+  },
+  {
+    "path": "/discover.xml",
+    "bytes": 3396,
+    "sha256": "574e0fd2d4f6ddac67a5353c2840884532ddac625c3ad2f4f950dd5bd0ec0e22"
+  },
+  {
+    "path": "/favicon.svg",
+    "bytes": 1162,
+    "sha256": "b92a623cbbf96fe1404d05cfe0c207aa6cdabc700c31feb2089ef75f880bac31"
+  },
+  {
+    "path": "/og-reference.png",
+    "bytes": 62129,
+    "sha256": "75f70c24a3f1d7ebac486f5e699ea22ee399d2284b5ecf1fff7120b7dc4399c0"
+  },
+  {
+    "path": "/assets/RankingExample-BtfxNvdQ.js",
+    "bytes": 49216,
+    "sha256": "6d065430be0bef670c1c7927f026986ea2f2523a0f9aacbf1b619501cf84e87a"
+  },
+  {
+    "path": "/assets/catalogue-editorial-D269M0O0.js",
+    "bytes": 16252,
+    "sha256": "7450f1ba102d49e4f148868abbc02252b25819579c3245e55906244b055d7af8"
+  },
+  {
+    "path": "/assets/catalogue-interactions-C4f2ALXs.js",
+    "bytes": 5904,
+    "sha256": "e82f750aa9babe0a2587c83b49ee7048f08b516498ca8b9352b7c908fc7bedce"
+  },
+  {
+    "path": "/assets/dm-sans-latin-400-normal-BwCSEQnW.woff",
+    "bytes": 18356,
+    "sha256": "38702875fe179437d200e7ba6f7fab4d497ffe48117ef332029b2081751186ad"
+  },
+  {
+    "path": "/assets/dm-sans-latin-400-normal-CW0RaeGs.woff2",
+    "bytes": 14200,
+    "sha256": "4ab51eb2cd7305d177187908d6397474d4520663f6c6e572feb0a64f4fa80006"
+  },
+  {
+    "path": "/assets/dm-sans-latin-500-normal-B9HHJjqV.woff2",
+    "bytes": 14304,
+    "sha256": "19bf1984956517c35c2bd35b6cdedac12a21d6fcd3596c614ecdfb88b648909d"
+  },
+  {
+    "path": "/assets/dm-sans-latin-500-normal-Dr3UlScf.woff",
+    "bytes": 18520,
+    "sha256": "7deb957e430b780ee3272d801af4f9f2211b1330ec40a312a8f25309eacb4034"
+  },
+  {
+    "path": "/assets/dm-sans-latin-600-normal-Aqo67rzb.woff2",
+    "bytes": 14144,
+    "sha256": "6bb2b2645ba5eeaecf56322c543fa3a75b87b927977b9c03b1dabc4205089120"
+  },
+  {
+    "path": "/assets/dm-sans-latin-600-normal-BmdmIIQ2.woff",
+    "bytes": 18320,
+    "sha256": "e7351257e49400eff05aca30a2007289194a900860d30c30770d8b8732897564"
+  },
+  {
+    "path": "/assets/gsap-OWHkPl-m.js",
+    "bytes": 69993,
+    "sha256": "9e6f44b7f41c1543d89d4ae9bfc76d15d2aee013cd73b163f00dd2e52a2e0595"
+  },
+  {
+    "path": "/assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff",
+    "bytes": 13144,
+    "sha256": "328d50b6ece9ca25c46eea3e885ba497f6237f2fb84ef7b92f88e14a1a25e381"
+  },
+  {
+    "path": "/assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2",
+    "bytes": 14708,
+    "sha256": "08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7"
+  },
+  {
+    "path": "/assets/interface-illustration-motion-CR_kZpVk.js",
+    "bytes": 3504,
+    "sha256": "837488a5db6bbfeca995248cf74b87cd8913ed68430801dc03c169b26072aae2"
+  },
+  {
+    "path": "/assets/mobile-menu-motion-C7SkfmP7.js",
+    "bytes": 2054,
+    "sha256": "30f9028a4f3406fe825c2e4bb4518e221cb336fbb814855aa907a742106d2416"
+  },
+  {
+    "path": "/assets/phudu-latin-600-normal-CVDJGCEO.woff",
+    "bytes": 15396,
+    "sha256": "5beeb0afe7fcd1f28c5b4d7a95eb5ab292af5e4fdea49948e60add8d8ed5f8c1"
+  },
+  {
+    "path": "/assets/phudu-latin-600-normal-oVQuti9Y.woff2",
+    "bytes": 12104,
+    "sha256": "8f03562343fa179fc1c20fdfa953da4d27e3c17cc1380b3a4017782f6ddb06fb"
+  },
+  {
+    "path": "/assets/product-tour-motion-C_ss-vSh.js",
+    "bytes": 3107,
+    "sha256": "22052953eddf46be79cd80a0b3e4dfc800ff39cc5cbf02716482c8578dcc7000"
+  },
+  {
+    "path": "/assets/reference-hero-motion-Dbh5nW8y.js",
+    "bytes": 4288,
+    "sha256": "318554f361d084030b0214b4b49796dd22d6152e56186fbddc26b3fb1388d959"
+  },
+  {
+    "path": "/assets/reference-story-motion-BfA0oEW4.js",
+    "bytes": 6995,
+    "sha256": "1e587d11e61c6c84c7bf45166b645a0dd209b3b151624a9967c353be6dacd277"
+  },
+  {
+    "path": "/assets/scroll-follow-DJXQmyuS.js",
+    "bytes": 787,
+    "sha256": "1c9d3112630d1194d813f88d6e19469a908943d344dc1bd281ff28ad15f1dc3d"
+  }
+]

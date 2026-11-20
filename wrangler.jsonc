@@ -1,0 +1,83 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "qofeno",
+  "main": "vendor/production-worker.mjs",
+  "no_bundle": true,
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/*",
+      "!/assets/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "03cb6051-5e2f-4953-9cc5-a5b08832e8d7",
+      "database_name": "qofeno-canvas"
+    },
+    {
+      "binding": "VISITOR_DB",
+      "database_id": "1cc78552-dc49-46b9-844e-f2c664353331",
+      "database_name": "qofeno-visitor-stats"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "PUBLIC_READ_LIMITER",
+      "namespace_id": "10812001",
+      "simple": {
+        "limit": 240,
+        "period": 60
+      }
+    },
+    {
+      "name": "SENSITIVE_REQUEST_LIMITER",
+      "namespace_id": "10812002",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    },
+    {
+      "name": "VISITOR_RATE_LIMITER",
+      "namespace_id": "10812101",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "CHECKOUT_ENABLED": "true",
+    "DODO_COMPATIBLE_PRODUCT_IDS": "pdt_0NrVusxIHDAL6149udYWe",
+    "DODO_ENVIRONMENT": "live_mode",
+    "PUBLIC_SITE_URL": "https://loopproof.me",
+    "REQUIRE_REQUEST_PROTECTION": "true",
+    "VISITOR_TRACKING_ENABLED": "true"
+  },
+  "triggers": {
+    "crons": [
+      "17 * * * *"
+    ]
+  },
+  "routes": [
+    {
+      "pattern": "loopproof.me",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.loopproof.me",
+      "custom_domain": true
+    }
+  ],
+  "find_additional_modules": false
+}

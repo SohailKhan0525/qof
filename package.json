@@ -1,0 +1,16 @@
+{
+  "name": "qofeno",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler dev --local --port 8787 --var PUBLIC_SITE_URL:http://localhost:8787 --var DODO_ENVIRONMENT:test_mode --var CHECKOUT_ENABLED:false",
+    "deploy": "npm run build && wrangler deploy --keep-vars"
+  },
+  "devDependencies": {
+    "wrangler": "4.156.2",
+    "@playwright/test": "1.64.1",
+    "@axe-core/playwright": "4.14.0"
+  }
+}

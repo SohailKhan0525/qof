@@ -1,0 +1,72 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "qofeno-payments-test",
+  "main": "vendor/test-worker.mjs",
+  "no_bundle": true,
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/*",
+      "!/assets/*"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "252c616d-56f8-4221-bd66-a39f65823269",
+      "database_name": "qofeno-payments-test"
+    },
+    {
+      "binding": "VISITOR_DB",
+      "database_id": "02173d49-e80c-4e98-b5fe-d2f4cb17b3e6",
+      "database_name": "qofeno-visitor-stats-test"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "PUBLIC_READ_LIMITER",
+      "namespace_id": "10812011",
+      "simple": {
+        "limit": 240,
+        "period": 60
+      }
+    },
+    {
+      "name": "SENSITIVE_REQUEST_LIMITER",
+      "namespace_id": "10812012",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    },
+    {
+      "name": "VISITOR_RATE_LIMITER",
+      "namespace_id": "10812111",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "CHECKOUT_ENABLED": "false",
+    "DODO_ENVIRONMENT": "test_mode",
+    "PUBLIC_SITE_URL": "https://qofeno-payments-test.sohailkhannn-0525.workers.dev",
+    "REQUIRE_REQUEST_PROTECTION": "true",
+    "VISITOR_TRACKING_ENABLED": "true"
+  },
+  "triggers": {
+    "crons": [
+      "17 * * * *"
+    ]
+  },
+  "find_additional_modules": false
+}
