@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 
 const assetDirectory = 'dist/assets';
-const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'editorial-gallery', 'top-navigation'];
+const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'editorial-gallery', 'top-navigation', 'type-and-layout'];
 const painters = [
   ['open-web-art', 'painter'],
   ['placement-art', 'placement-art'],

@@ -1,0 +1,263 @@
+@font-face {
+  font-family: Figtree;
+  src: url('/assets/figtree-latin-ext-v9.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Figtree;
+  src: url('/assets/figtree-latin-v9.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Raleway;
+  src: url('/assets/raleway-latin-ext-v37.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Raleway;
+  src: url('/assets/raleway-latin-v37.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --q-interface: Figtree, 'DM Sans', system-ui, sans-serif;
+  --q-display: Raleway, var(--q-interface);
+  --q-page: 1440px;
+  --q-gutter: clamp(20px, 5vw, 72px);
+  --q-edge: max(var(--q-gutter), calc((100vw - var(--q-page)) / 2 + var(--q-gutter)));
+  --q-section-gap: clamp(52px, 6.2vw, 88px);
+  --q-heading-gap: clamp(24px, 3vw, 42px);
+  --q-column-gap: clamp(24px, 4.5vw, 64px);
+}
+
+body,
+body :is(.product-tour, .placement-process, .visitor-activity, .checkout-notification),
+body :is(button, input, select, textarea),
+body .checkout-notification h2,
+body .visitor-activity-metric [data-visitor-metric] {
+  font-family: var(--q-interface);
+}
+
+body .qofeno-header {
+  --q-nav-gutter: var(--q-edge);
+}
+
+body .qofeno-header .qofeno-header-brand {
+  font-family: var(--q-display);
+  font-weight: 780;
+}
+
+body .qofeno-header .qofeno-navigation-caption > span:first-child,
+body .qofeno-header .qofeno-navigation-copy strong,
+body .qofeno-header .qofeno-mobile-primary nav a {
+  font-family: var(--q-interface);
+  font-weight: 600;
+}
+
+body :is(.reference-hero, .product-tour, .rank-board-section, .visitor-activity-inner, .placement-process, .reference-closing),
+body .motion-root :is(.honest-section, .questions-section),
+body .footer-stage .site-footer {
+  width: 100%;
+  max-width: var(--q-page);
+  padding-inline: var(--q-gutter);
+  margin-inline: auto;
+}
+
+body :is(.product-tour, .rank-board-section, .placement-process, .reference-closing),
+body .motion-root :is(.honest-section, .questions-section) {
+  padding-block: var(--q-section-gap);
+}
+
+body .editorial-discovery {
+  padding: var(--q-section-gap) var(--q-edge);
+}
+
+body .visitor-activity-inner {
+  padding-top: var(--q-section-gap);
+}
+
+body .reference-hero {
+  column-gap: var(--q-column-gap);
+  padding-top: clamp(42px, 5vw, 68px);
+  padding-bottom: 28px;
+}
+
+body .reference-hero-kicker {
+  margin-bottom: 22px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body .reference-headline {
+  font: 500 clamp(53px, 7.15vw, 104px)/.99 var(--q-display);
+  letter-spacing: -.063em;
+}
+
+body .reference-hero .reference-headline-line {
+  gap: .18em;
+}
+
+body .reference-hero-bottom {
+  margin-top: 22px;
+  gap: 20px;
+}
+
+body .reference-hero-description {
+  max-width: 34ch;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.55;
+}
+
+body .reference-hero .reference-hero-actions {
+  gap: 10px 20px;
+}
+
+body .reference-hero .reference-hero-actions .button {
+  min-height: 48px;
+}
+
+body .reference-hero .hero-buy,
+.qofeno-field-guide-link {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.qofeno-field-guide figcaption {
+  padding-inline: 0 4%;
+}
+
+body .product-tour h2,
+body :is(.rank-heading, .discovery-intro, .visitor-activity, .placement-process-heading, .questions-section) h2 {
+  font: 500 clamp(34px, 4.45vw, 64px)/1.04 var(--q-display);
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+
+body .reference-closing h2 {
+  font: 500 clamp(52px, 7.5vw, 105px)/1 var(--q-display);
+  letter-spacing: -.06em;
+}
+
+body .honest-section h2 {
+  font: 550 clamp(32px, 3.75vw, 52px)/1.08 var(--q-display);
+  letter-spacing: -.045em;
+}
+
+body :is(.product-tour-heading, .rank-heading, .placement-process-heading),
+body .editorial-discovery .discovery-intro {
+  column-gap: var(--q-column-gap);
+  margin-bottom: var(--q-heading-gap);
+}
+
+body .product-tour-heading > p:last-child {
+  padding-left: 0;
+}
+
+body :is(.product-tour-heading, .rank-heading, .discovery-intro, .placement-process-heading) > p:last-of-type,
+body .placement-process-copy p,
+body .faq-list details p {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+body .discovery-list,
+body .placement-process-grid {
+  gap: clamp(12px, 1.65vw, 24px);
+}
+
+body .discovery-row > div > p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+body .discovery-row .discovery-title {
+  text-wrap: pretty;
+}
+
+body .placement-process-topline,
+body .placement-process-bottom {
+  font-size: 12px;
+}
+
+body .dialog h2,
+body .account-page h1,
+body .motion-root .legal-heading-copy h1,
+body .spot-page .spot-public-poster h1 {
+  font-family: var(--q-display);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -.049em;
+}
+
+body .dialog input:not([type='radio'], [type='checkbox']),
+body .dialog select,
+body .dialog textarea {
+  font-size: 16px;
+}
+
+body .motion-root .legal-page,
+body .account-page {
+  padding-inline: var(--q-gutter);
+}
+
+@media (min-width: 731px) and (max-width: 1020px) {
+  body .reference-headline {
+    font-size: clamp(48px, 7vw, 72px);
+  }
+}
+
+@media (max-width: 730px) {
+  body .reference-hero {
+    padding-top: 34px;
+  }
+
+  body .reference-hero-kicker {
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+
+  body .reference-headline {
+    font-size: clamp(47px, 13vw, 84px);
+  }
+
+  body .reference-hero-bottom {
+    margin-top: 17px;
+    gap: 14px;
+  }
+
+  body .reference-hero .reference-hero-actions {
+    gap: 5px 13px;
+  }
+
+  body .reference-hero .hero-buy {
+    font-size: 13px;
+  }
+
+  .qofeno-field-guide,
+  body .reference-hero::after {
+    margin-top: 12px;
+  }
+
+  .qofeno-field-guide figcaption {
+    padding-inline: 0;
+  }
+
+  body .product-tour-heading > p:last-child {
+    margin-top: 14px;
+  }
+}

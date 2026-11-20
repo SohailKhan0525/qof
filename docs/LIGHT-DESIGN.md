@@ -35,3 +35,13 @@ The placement guide, board examples, checkout illustration, visitor scene, walkt
 `src/styles/top-navigation.css` gives the sticky header a stable height and aligns its background with its controls. Short menu layouts keep the main links and placement action reachable in landscape.
 
 Run `node scripts/check-canvas-art.mjs` against a local Worker or set `QOFENO_CHECK_URL` to the deployed origin. This check compares rendered frames, verifies the offscreen pause, and covers the layout from 320px through desktop, checkout preview and the fallback. Browser checks block API writes.
+
+## Typography and alignment
+
+Boardy’s public homepage uses Raleway for its display headings and keeps the reading measure narrow. Uizze uses Figtree to keep its interface and supporting copy readable. Qofeno uses Raleway for the hero and section headings, Figtree for body text and controls, and Newsreader for the editorial cards. Raleway and Figtree are self-hosted under their SIL Open Font Licenses in `docs/`.
+
+`src/styles/type-and-layout.css` defines the type roles and the shared content grid. The header frame, hero, tour, board, gallery, activity, process, FAQ and footer align to the same gutters. Section spacing and action sizes scale with the viewport. The original Canvas illustration remains the main visual.
+
+References: https://www.boardy.ai/ and https://uizze.com/.
+
+The desktop and mobile screenshots were exported in Shots using its Safari Light frame. The original PNG exports are in `public/brand/mockups/`.
