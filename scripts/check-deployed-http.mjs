@@ -130,6 +130,9 @@ await check('canonical index and slash redirects', async () => {
   for (const [from, to] of [['/index.html', '/'], ['/terms/', '/terms']]) {
     const r = await get(origin + from); assert.equal(r.status, 308); assert.equal(r.headers.get('location'), origin + to); await r.arrayBuffer();
   }
+  if (!isTest) {
+    const r = await get('https://www.loopproof.me/'); assert.equal(r.status, 308); assert.equal(r.headers.get('location'), origin + '/'); await r.arrayBuffer();
+  }
 });
 const assetResponses = [];
 await check('deployed assets match the local build and original recovery hashes', async () => {
@@ -137,7 +140,7 @@ await check('deployed assets match the local build and original recovery hashes'
   const assets = new Set([...home.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g)].map(match => match[1]));
   const theme = [...assets].find(asset => /qofeno-light-/.test(asset));
   const themeResponse = await get(origin + theme); const themeCSS = await themeResponse.text();
-  for (const match of themeCSS.matchAll(/url\(['"]?(\/assets\/[^)'"\s]+)['"]?\)/g)) assets.add(match[1]);
+  for (const match of themeCSS.matchAll(/url\(['"]?(\/(?:assets|brand)\/[^)'"\s]+)['"]?\)/g)) assets.add(match[1]);
   const recovered = JSON.parse(await read('docs/recovered-assets.json'));
   const originalHashes = new Map(recovered.map(asset => [asset.path, asset.sha256]));
   for (const asset of recovered) assets.add(asset.path);

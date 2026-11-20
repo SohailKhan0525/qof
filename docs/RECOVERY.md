@@ -70,4 +70,17 @@ This offline check verifies:
 
 The first run passed **12/12 checks**. The machine-readable result is `test-results/recovery/runtime-verification.json`. This check reads no credentials and sends no network requests.
 
+For a deployed release, pass its exact version ID and environment:
+
+```sh
+node --use-env-proxy scripts/check-deployed-http.mjs --environment test --version <version-id>
+node --use-env-proxy scripts/check-deployed-http.mjs --environment production --version <version-id>
+```
+
+The HTTP checker uses only GET requests. It verifies public and private page indexing, status/board/aggregate-visitor contracts, an empty anonymous purchase session, missing-file rejection, canonical redirects, robots/sitemaps, security headers, and deployed asset hashes. Test checkout must remain disabled; production must report live checkout availability. With the existing Cloudflare account/token environment variables, it additionally compares binding metadata and secret names to the recovery archive, checks the active version, and verifies the deployed Worker module hash. It never prints or saves credentials.
+
+Reports are saved separately as `test-results/light-2026-11-20/deployed-http-test.json` and `deployed-http-production.json`. The test moderator request exits with 503 because no moderator key is configured. The production moderator request is deliberately omitted: even an unsuccessful GET writes a failed-sign-in rate-limit row to D1. Production authentication continuity is checked through the unchanged runtime hash. These checks do not initiate payment or recovery operations, follow advertising redirects, submit visitor heartbeats, or run database mutations.
+
+The 20 November release passed **27/27 test HTTP checks** on version `1cd8059b-2402-4a85-bd57-44edb8550529` and **26/26 production HTTP checks** on version `6a0478c8-7f42-4a5b-8d36-321a2282766a`. Both runs verified 31 deployed assets against the stable local build, including all 27 original recovered assets. The production response reported live checkout available. Both environments retained their original bindings and secret names, and each deployed Worker module matched its original recovery hash.
+
 Preservation checks establish artifact/configuration continuity, not new payment correctness, universal browser compatibility or a complete security audit. Validate the new presentation separately in a browser: desktop and mobile rendering, all public pages, navigation, walkthrough chapters, accessible contrast, initial HTML and purchase preview without creating an order. Deployed checks should verify real status/board responses, asset security headers and anonymous private-access rejection, while blocking financial writes and visitor-recording heartbeats. Report only the checks actually executed in the current workspace.
