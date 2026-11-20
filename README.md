@@ -1,6 +1,6 @@
 # Qofeno
 
-Qofeno is an independent website directory at https://loopproof.me, with editorial discoveries and clearly separate, one-time paid placements.
+Qofeno is an independent website directory at https://loopproof.me, with an active owner placement and a separate ranking for one-time paid placements.
 
 ## Run locally
 
@@ -37,4 +37,4 @@ Cloudflare credentials belong in secure environment settings. Existing Worker se
 
 ## Source recovery
 
-This workspace was restored from the published application on 20 November 2026. Original server/shared TypeScript was recovered. The original frontend TSX and old test suite were unavailable. The published browser app and Worker modules are preserved byte-for-byte; the new authored styles, illustration and accessibility adapter are separate. See [recovery notes](docs/RECOVERY.md) before modifying backend source, and [design notes](docs/LIGHT-DESIGN.md) for this release.
+This workspace was restored from the published application on 20 November 2026. Original server/shared TypeScript was recovered. The original frontend TSX and old test suite were unavailable. The original published browser bundle and Worker modules are preserved as baselines. The build applies guarded board presentation changes to the browser copy and wraps the unchanged payment Worker. See [recovery notes](docs/RECOVERY.md) before modifying backend source, and [design notes](docs/LIGHT-DESIGN.md) for this release.

@@ -299,67 +299,70 @@ function globe(ctx, x, y, progress = 1) {
   ctx.restore();
 }
 
-function radioSheet(ctx, width, height, progress) {
-  grain(ctx, width, height, '#ffffff29');
-  ctx.lineWidth = 1;
-  roundedRect(ctx, 13, 13, width - 26, height - 26, 3, null, '#edf5ff79');
-  ctx.strokeStyle = '#e9f0ff69';
+function websiteProof(ctx, width, height, progress) {
+  grain(ctx, width, height, '#87674c20');
+  ctx.fillStyle = '#f9efdc';
+  ctx.fillRect(0, 0, width, 53);
+  roundedRect(ctx, 69, 12, width - 101, 28, 5, '#fffcf3', '#e2d4bc');
+  for (const [index, fill] of ['#ca775c', '#d9aa56', '#699785'].entries()) {
+    circle(ctx, 20 + index * 14, 26, 3.5, fill);
+  }
+  ctx.fillStyle = ink;
+  ctx.font = '600 15px Figtree, Arial, sans-serif';
+  printText(ctx, 'loopproof.me', 83, 31, stage(progress, .07, .53));
+  ctx.strokeStyle = '#c9ba9f';
   ctx.beginPath();
-  traceLine(ctx, 26, 65, width - 26, 65, stage(progress, .02, .42));
-  traceLine(ctx, 26, height - 72, width - 26, height - 72, stage(progress, .43, .86));
+  traceLine(ctx, 0, 53, width, 53, stage(progress, 0, .48));
   ctx.stroke();
-  ctx.font = '600 13px "DM Sans", Arial, sans-serif';
-  ctx.fillStyle = cream;
-  printText(ctx, 'FIELD GUIDE TO THE WEB', 27, 46, stage(progress, .03, .49));
 
-  const globeX = 176;
-  const globeY = 198;
-  ctx.strokeStyle = '#a4bdedb5';
+  ctx.save();
+  const contentX = 26;
+  const contentY = 76;
+  const contentWidth = width - 52;
+  const contentHeight = height - 102;
+  roundedRect(ctx, contentX, contentY, contentWidth, contentHeight, 5, cobalt, '#214389');
+  ctx.clip();
+  ctx.translate(contentX, contentY);
+  grain(ctx, contentWidth, contentHeight, '#ffffff36');
+  const globeX = contentWidth - 102;
+  const globeY = contentHeight / 2;
+  ctx.strokeStyle = '#bfd0fd98';
+  ctx.lineWidth = 1;
   ctx.setLineDash([2, 5]);
   ctx.beginPath();
-  ctx.arc(globeX, globeY, 121, 0, Math.PI * 2 * stage(progress, .15, .88));
+  ctx.arc(globeX, globeY, 92, 0, Math.PI * 2 * stage(progress, .20, .88));
   ctx.stroke();
   ctx.setLineDash([]);
-  star(ctx, 46, 113, 8 * stage(progress, .32, .53), cream);
-  star(ctx, 295, 241, 13 * stage(progress, .59, .84), '#ffcf76');
-  star(ctx, 60, 269, 6 * stage(progress, .53, .73), '#ffcf76');
-  globe(ctx, globeX, globeY, stage(progress, 0, .88));
-  radioWaves(ctx, 227, 163, 38, '#a84225', stage(progress, .45, 1));
-
+  ctx.save();
+  ctx.translate(globeX, globeY);
+  ctx.scale(.73, .73);
+  globe(ctx, 0, 0, stage(progress, .10, .86));
+  ctx.restore();
   ctx.fillStyle = cream;
-  ctx.font = '400 37px Georgia, serif';
-  printText(ctx, 'Radio Garden', 60, height - 30, stage(progress, .43, .9));
-}
-
-function windowSheet(ctx, width, height, progress) {
-  grain(ctx, width, height, '#af4d2833');
-  roundedRect(ctx, 12, 12, width - 24, height - 24, 2, null, '#a95b46');
-  ctx.strokeStyle = '#a95b46';
-  ctx.beginPath();
-  traceLine(ctx, 25, 49, width - 25, 49, stage(progress, 0, .6));
-  traceLine(ctx, 25, height - 58, width - 25, height - 58, stage(progress, .35, 1));
-  ctx.stroke();
-  windowScene(ctx, 25, 66, width - 50, height - 143, progress);
-}
-
-function bookSheet(ctx, width, height, progress) {
-  grain(ctx, width, height, '#315d4f2e');
-  roundedRect(ctx, 9, 9, width - 18, height - 18, 3, null, '#618a7c');
-  openBook(ctx, 54, 9, 58, '#28564c', progress);
-  ctx.fillStyle = '#20483f';
-  ctx.font = '400 17px Georgia, serif';
-  ctx.textAlign = 'center';
-  printText(ctx, 'Standard Ebooks', width / 2, height - 21, stage(progress, .36, 1));
+  ctx.font = '600 52px Raleway, Arial, sans-serif';
+  printText(ctx, 'Qofeno.', 27, 100, stage(progress, .17, .72));
+  ctx.font = '500 18px Figtree, Arial, sans-serif';
+  printText(ctx, 'Independent website board', 30, 138, stage(progress, .48, .92));
+  star(ctx, globeX - 78, globeY + 55, 8 * stage(progress, .70, .94), '#ffcf76');
+  ctx.restore();
 }
 
 function hero(ctx, progress) {
-  const unsettled = 1 - progress;
-  paper(ctx, 393 - 9 * unsettled, 91, 181, 278, .15 - .045 * unsettled, '#f2ab88', '#9b5945',
-    (surface, width, height) => windowSheet(surface, width, height, stage(progress, .08, .78)));
-  paper(ctx, 137, 37 + 8 * unsettled, 353, 378, -.082 + .035 * unsettled, cobalt, '#214389',
-    (surface, width, height) => radioSheet(surface, width, height, progress));
-  paper(ctx, 28 + 7 * unsettled, 291 - 3 * unsettled, 167, 110, -.16 + .045 * unsettled, mint, '#618a7c',
-    (surface, width, height) => bookSheet(surface, width, height, stage(progress, .22, .96)));
+  const arrival = 1 - stage(progress, 0, .8);
+  paper(ctx, 84, 67 + 9 * arrival, 448, 314, .076, '#d7e6fb', '#829fca', (surface, width, height) => {
+    grain(surface, width, height, '#315e8e30');
+    roundedRect(surface, 13, 13, width - 26, height - 26, 3, null, '#9ab0d1');
+  });
+  paper(ctx, 52 + 6 * arrival, 83 + 6 * arrival, 497, 292, -.032 + .03 * arrival, '#fff8e9', '#baad96',
+    (surface, width, height) => websiteProof(surface, width, height, progress));
+  const revealed = stage(progress, .28, .92);
+  paper(ctx, 374 + 8 * (1 - revealed), 345, 171, 48, -.08, mint, '#6f9886', (surface, width, height) => {
+    grain(surface, width, height, '#315d4f2e');
+    circle(surface, 21, 24, 4 * revealed, '#225642');
+    surface.fillStyle = '#214536';
+    surface.font = '700 16px Figtree, Arial, sans-serif';
+    printText(surface, 'Owner placement', 34, 30, revealed);
+  });
 }
 
 function envelope(ctx, progress) {

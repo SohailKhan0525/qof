@@ -14,8 +14,7 @@ for(const width of [1440,390,320]){
  await page.screenshot({path:`test-results/light-2026-11-20/menu-${width}.png`});
  const menuAxe=await new AxeBuilder({page}).include('.qofeno-header').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
  await page.keyboard.press('Escape');await page.waitForTimeout(800);
- await page.locator('.product-tour').scrollIntoViewIfNeeded();await page.locator('.product-tour-chapter').first().click();await page.waitForTimeout(3000);
- for(const sel of ['.product-tour','.rank-board-section','.editorial-discovery','.placement-process','.questions-section','.reference-closing','.footer-stage']){await page.locator(sel).scrollIntoViewIfNeeded();await page.waitForTimeout(800);}
+ for(const sel of ['.rank-board-section','.placement-process','.questions-section','.reference-closing','.footer-stage']){await page.locator(sel).scrollIntoViewIfNeeded();await page.waitForTimeout(800);}
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
  const overflows=await page.locator('body *').evaluateAll(es=>es.filter(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.left>=0&&r.right>innerWidth+1&&r.height>0}).map(e=>({tag:e.tagName,cls:e.getAttribute('class'),text:e.textContent.slice(0,50)})).slice(0,20));
  results.push({width,metrics,overflows,errors,menuViolations:menuAxe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),violations:axe.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))});

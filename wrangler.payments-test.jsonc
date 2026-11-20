@@ -1,7 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "qofeno-payments-test",
-  "main": "vendor/test-worker.mjs",
+  "main": ".release/test/index.mjs",
+  "base_dir": ".release/test",
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["application.mjs", "board-presentation.mjs", "house-placement.mjs"]
+    }
+  ],
   "no_bundle": true,
   "compatibility_date": "2026-10-01",
   "compatibility_flags": [
@@ -68,5 +75,5 @@
       "17 * * * *"
     ]
   },
-  "find_additional_modules": false
+  "find_additional_modules": true
 }

@@ -38,9 +38,9 @@ The recovered browser bundles are functional deployment artifacts, not a substit
 
 ## How this project now builds
 
-`npm run build` copies `public/` into `dist/`, assembles the new authored light-theme styles from `src/styles/`, writes a content-hashed stylesheet, and adds it to the HTML shell. The existing browser application continues to own its interactions, requests and payment flow.
+`npm run build` copies `public/` into `dist/`, combines the light styles, and writes content-hashed assets with integrity attributes. `scripts/board-client.mjs` applies guarded presentation changes to a copy of the recovered browser bundle. The recovered file remains the source baseline.
 
-Wrangler uses `vendor/production-worker.mjs` or `vendor/test-worker.mjs` with `no_bundle: true` and `find_additional_modules: false`. These compiled modules retain the deployed `fetch`/`scheduled` handlers and exports. The recovered `server/` and shared `src/lib/` source files are preserved for reference and future deliberate restoration; editing those copies alone does **not** rebuild the deployed Worker in the current build pipeline.
+Wrangler loads the generated `.release/production` or `.release/test` entry with `no_bundle: true`. The build copies the matching compiled Worker byte-for-byte into `application.mjs`. The authored presentation wrapper removes retired editorial content from HTML and exposes the owner placement separately on public board reads. The original module still handles payment requests, deployed rate limits, scheduling and paid-ranking data. Editing the recovered TypeScript alone does not rebuild the deployed payment module.
 
 Before a future backend change, restore a proper source build and meaningful backend tests as a separate task. Do not silently replace or loosen the byte-preservation checks to make an unverified runtime change pass.
 

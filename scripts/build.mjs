@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { boardClient } from './board-client.mjs';
 
 const assetDirectory = 'dist/assets';
-const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'editorial-gallery', 'top-navigation', 'type-and-layout'];
+const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board'];
 const painters = [
   ['open-web-art', 'painter'],
   ['placement-art', 'placement-art'],
@@ -47,9 +48,13 @@ for (const [source, label] of painters) {
   mountSource = mountSource.replace(`./${source}.mjs`, `./${painterFile}`);
 }
 const mountFile = await writeAsset('artwork', 'js', mountSource);
+const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
+const houseFile = await writeAsset('house-placement', 'js', housePlacement);
+const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
+const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile));
 
 const assets = await Promise.all([
-  script('index-SEI-Pf69.js', 'type="module"'),
+  script(clientFile, 'type="module"'),
   stylesheet('index-Dm4cACIa.css'),
   stylesheet(styleFile),
   script(adapterFile, 'defer'),
@@ -64,4 +69,21 @@ const assetFiles = (await readdir(assetDirectory)).sort();
 const assetCache = assetFiles.map(file =>
   `/assets/${file}\n  Cache-Control: public, max-age=31536000, immutable`);
 await writeFile('dist/_headers', `${headers.trimEnd()}\n\n${assetCache.join('\n\n')}\n`);
+
+const presentation = await readFile('server/board-presentation.mjs', 'utf8');
+const wrapper = `import application from './application.mjs';
+import { withBoardPresentation } from './board-presentation.mjs';
+export default withBoardPresentation(application);
+`;
+await rm('.release', { recursive: true, force: true });
+for (const environment of ['production', 'test']) {
+  const directory = `.release/${environment}`;
+  await mkdir(directory, { recursive: true });
+  await Promise.all([
+    cp(`vendor/${environment}-worker.mjs`, `${directory}/application.mjs`),
+    writeFile(`${directory}/index.mjs`, wrapper),
+    writeFile(`${directory}/board-presentation.mjs`, presentation),
+    writeFile(`${directory}/house-placement.mjs`, housePlacement),
+  ]);
+}
 console.log(`Built light design and animated Canvas artwork with integrity-checked entry assets: ${styleFile}.`);

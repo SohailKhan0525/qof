@@ -5,6 +5,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { HOUSE_PLACEMENT } from '../src/lib/house-placement.mjs';
 
 const project = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -68,6 +69,24 @@ for (const route of ['/', '/terms', '/privacy', '/refunds', '/contact', '/advert
     return { status: r.status, stylesheet };
   });
 }
+await check('server-rendered board includes the owner placement and retires the editorial gallery', async () => {
+  assert.match(home, /id="qofeno-placement"/);
+  assert.ok(home.includes(HOUSE_PLACEMENT.label));
+  assert.ok(home.includes(HOUSE_PLACEMENT.disclosure));
+  assert.match(home, /href="https:\/\/loopproof\.me\/">Visit website/);
+  assert.doesNotMatch(home, /id="(?:discover|take-a-look)"|\/discover\.xml|editorial discoveries|editorial picks/i);
+  if (!isTest) {
+    const structured = home.match(/<script type="application\/ld\+json">([\s\S]+?)<\/script>/);
+    assert.ok(structured, 'JSON-LD missing from homepage.');
+    const graph = JSON.parse(structured[1])['@graph'];
+    assert.ok(graph.some(node => node['@type'] === 'FAQPage' && node.mainEntity.length === 7));
+  }
+});
+await check('the retired editorial feed returns 410', async () => {
+  const r = await get(origin + '/discover.xml'); secure(r); noIndex(r);
+  assert.equal(r.status, 410);
+  assert.equal(r.headers.get('cache-control'), 'no-store');
+});
 await check('status: checkout availability matches the deployment environment', async () => {
   const r = await get(origin + '/api/status'); secure(r); noIndex(r); assert.equal(r.status, 200);
   const value = await r.json(); assert.equal(value.checkoutAvailable, !isTest); assert.equal(value.mode, isTest ? 'unconfigured' : 'live');
@@ -80,6 +99,8 @@ await check('public board: valid data contract for the deployment environment', 
   assert.ok(Array.isArray(value.listings)); assert.equal(value.activeCount, value.listings.length);
   assert.ok(Number.isFinite(value.totalActiveSpend) && value.totalActiveSpend >= 0);
   assert.ok(Number.isFinite(value.firstPlaceCost) && value.firstPlaceCost >= 10);
+  assert.deepEqual(value.housePlacement, HOUSE_PLACEMENT);
+  assert.ok(!value.listings.some(placement => placement.id === HOUSE_PLACEMENT.id));
   return { activeCount: value.activeCount, mode: value.mode };
 });
 await check('visitor estimates: aggregate-only response', async () => {
@@ -159,7 +180,9 @@ await check('deployed assets match the local build and original recovery hashes'
   for (const match of themeCSS.matchAll(/url\(['"]?(\/(?:assets|brand)\/[^)'"\s]+)['"]?\)/g)) assets.add(match[1]);
   const recovered = JSON.parse(await read('docs/recovered-assets.json'));
   const originalHashes = new Map(recovered.map(asset => [asset.path, asset.sha256]));
-  for (const asset of recovered) assets.add(asset.path);
+  for (const asset of recovered) {
+    if (asset.path !== '/discover.xml') assets.add(asset.path);
+  }
   const checked = [];
   for (const asset of assets) {
     const r = await get(origin + asset); assert.equal(r.status, 200, asset);
@@ -210,12 +233,19 @@ if (!account || !token) {
     assert.deepEqual(newest.versions.map(({ version_id, percentage }) => ({ version_id, percentage })), [{ version_id: expectedVersion, percentage: 100 }]);
     return { version: expectedVersion, percentage: 100 };
   });
-  await check(`deployed ${environment} Worker source is byte-identical to the recovered runtime`, async () => {
+  await check(`deployed ${environment} wrapper uses the unchanged recovered runtime`, async () => {
     const r = await authenticatedGet(worker + '/content/v2'); assert.equal(r.status, 200);
-    const form = await r.formData(); const modules = [];
-    for (const [name, value] of form.entries()) if (typeof value !== 'string' && /\.(?:m?js)$/.test(value.name || name)) modules.push(value);
-    assert.equal(modules.length, 1, 'Expected exactly one compiled module');
-    const bytes = Buffer.from(await modules[0].arrayBuffer()); const local = await read(`vendor/${environment}-worker.mjs`);
+    const form = await r.formData(); const modules = new Map();
+    for (const [name, value] of form.entries()) {
+      if (typeof value !== 'string' && /\.(?:m?js)$/.test(value.name || name)) modules.set(path.basename(value.name || name), value);
+    }
+    const expected = ['application.mjs', 'board-presentation.mjs', 'house-placement.mjs', 'index.mjs'];
+    assert.deepEqual([...modules.keys()].sort(), expected, 'Unexpected deployed modules');
+    for (const filename of expected) {
+      const bytes = Buffer.from(await modules.get(filename).arrayBuffer());
+      assert.equal(sha256(bytes), sha256(await read(`.release/${environment}/${filename}`)), `Deployed ${filename} differs from the release build`);
+    }
+    const bytes = Buffer.from(await modules.get('application.mjs').arrayBuffer()); const local = await read(`vendor/${environment}-worker.mjs`);
     assert.equal(sha256(bytes), sha256(local));
     assert.equal(sha256(bytes), isTest ? '202dc7ef27aff0dab856995cf167baf86a1d732f1046db02600fdcbd5d2a02a8' : '229975fca6f15e6be4259c898eff5ed23515281afcc3d5b45df436f73678c53d');
     return { sha256: sha256(bytes), bytes: bytes.length };

@@ -104,24 +104,31 @@ await check('source theme asset references resolve in public', async () => {
 
 const expected = [
   {
-    file: 'wrangler.jsonc', name: 'qofeno', main: 'vendor/production-worker.mjs', dev: false,
+    file: 'wrangler.jsonc', name: 'qofeno', release: '.release/production', runtime: 'vendor/production-worker.mjs', dev: false,
     origin: 'https://loopproof.me', mode: 'live_mode', checkout: 'true',
     databases: { DB: ['03cb6051-5e2f-4953-9cc5-a5b08832e8d7', 'qofeno-canvas'], VISITOR_DB: ['1cc78552-dc49-46b9-844e-f2c664353331', 'qofeno-visitor-stats'] },
     namespaces: { PUBLIC_READ_LIMITER: '10812001', SENSITIVE_REQUEST_LIMITER: '10812002', VISITOR_RATE_LIMITER: '10812101' },
   },
   {
-    file: 'wrangler.payments-test.jsonc', name: 'qofeno-payments-test', main: 'vendor/test-worker.mjs', dev: true,
+    file: 'wrangler.payments-test.jsonc', name: 'qofeno-payments-test', release: '.release/test', runtime: 'vendor/test-worker.mjs', dev: true,
     origin: 'https://qofeno-payments-test.sohailkhannn-0525.workers.dev', mode: 'test_mode', checkout: 'false',
     databases: { DB: ['252c616d-56f8-4221-bd66-a39f65823269', 'qofeno-payments-test'], VISITOR_DB: ['02173d49-e80c-4e98-b5fe-d2f4cb17b3e6', 'qofeno-visitor-stats-test'] },
     namespaces: { PUBLIC_READ_LIMITER: '10812011', SENSITIVE_REQUEST_LIMITER: '10812012', VISITOR_RATE_LIMITER: '10812111' },
   },
 ];
+const releaseImports = ['application.mjs', 'board-presentation.mjs', 'house-placement.mjs'];
 for (const contract of expected) {
   await check(`${contract.file} preserves routing, bindings and payment isolation`, async () => {
     // These checked-in .jsonc files intentionally use comment-free JSON.
     const config = await json(contract.file);
-    assert.ok(config.name === contract.name && config.main === contract.main, 'Worker name or entrypoint changed.');
-    assert.ok(config.no_bundle === true && config.find_additional_modules === false, 'Compiled Worker must not be rebuilt or discover other modules.');
+    assert.ok(config.name === contract.name && config.main === `${contract.release}/index.mjs`, 'Worker name or entrypoint changed.');
+    assert.ok(config.no_bundle === true && config.find_additional_modules === true && config.base_dir === contract.release,
+      'The original Worker and presentation wrapper must load as separate, isolated modules.');
+    assert.deepEqual(config.rules, [{ type: 'ESModule', globs: releaseImports }], 'Unexpected deployed module selection.');
+    assert.deepEqual((await readdir(contract.release)).sort(), [...releaseImports, 'index.mjs'].sort(), 'Unexpected release files.');
+    assert.deepEqual(await read(`${contract.release}/application.mjs`), await read(contract.runtime), 'Recovered payment runtime changed during packaging.');
+    assert.deepEqual(await read(`${contract.release}/board-presentation.mjs`), await read('server/board-presentation.mjs'));
+    assert.deepEqual(await read(`${contract.release}/house-placement.mjs`), await read('src/lib/house-placement.mjs'));
     assert.ok(config.compatibility_date === '2026-10-01' && JSON.stringify(config.compatibility_flags) === '["nodejs_compat"]', 'Compatibility settings changed.');
     assert.ok(config.workers_dev === contract.dev && config.preview_urls === false, 'Worker URL exposure differs.');
     assert.ok(config.assets?.directory === 'dist' && config.assets?.binding === 'ASSETS', 'Asset binding changed.');

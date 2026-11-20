@@ -1,19 +1,10 @@
-import { drawDiscoveryMark, drawFieldGuide } from './open-web-art.mjs';
+import { drawFieldGuide } from './open-web-art.mjs';
 import { drawPlacementArt } from './placement-art.mjs';
 import { drawUtilityArt } from './utility-art.mjs';
 
 const root = document.getElementById('root');
-const markKinds = {
-  'public-domain-review': 'archive',
-  'standard-ebooks': 'books',
-  'radio-garden': 'radio',
-  'window-swap': 'window',
-  'fonts-in-use': 'type',
-  'neal-fun': 'play',
-};
-const markSelector = '.discovery-row[data-placement-id] .discovery-monogram';
-const sceneSelector = '[data-interface-illustration] > svg, .visitor-activity-art > svg, .tour-radio-art > svg';
-const targetSelector = `.reference-hero, .reference-closing-orbit, ${markSelector}, ${sceneSelector}`;
+const sceneSelector = '[data-interface-illustration] > svg, .visitor-activity-art > svg';
+const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}`;
 const placementKinds = { submit: 'submit', review: 'review', ranking: 'ranking', expiry: 'expiry', receipt: 'ticket' };
 const utilityKinds = { discover: 'discover', contact: 'message', privacy: 'recovery' };
 const canvases = new Map();
@@ -118,8 +109,7 @@ function syncMotion(canvas) {
   const entry = canvases.get(canvas);
   if (!entry) return;
   const visible = entry.inViewport && !document.hidden &&
-    !entry.host.closest('[inert], dialog:not([open]), .qofeno-navigation-panel[data-open="false"]') &&
-    !(entry.kind === 'radio' && entry.host.closest('.product-tour:not([data-tour-chapter="0"])'));
+    !entry.host.closest('[inert], dialog:not([open]), .qofeno-navigation-panel[data-open="false"]');
   entry.active ||= visible;
   paint(canvas);
   if (!visible || !entry.painted || entry.failed || entry.elapsed === entry.duration) {
@@ -166,9 +156,9 @@ function mountHero(hero) {
   frame.append(canvas);
   const caption = document.createElement('figcaption');
   const link = document.createElement('a');
-  link.href = '#discover';
+  link.href = '#qofeno-placement';
   link.className = 'qofeno-field-guide-link';
-  link.textContent = 'Browse editorial picks';
+  link.textContent = 'View Qofeno’s placement';
   const arrow = document.createElement('span');
   arrow.setAttribute('aria-hidden', 'true');
   arrow.textContent = '↓';
@@ -182,8 +172,7 @@ function mountScene(svg) {
   const host = svg.parentElement;
   const illustration = host.dataset.interfaceIllustration;
   const placementKind = host.matches('.checkout-interface-art') ? 'ticket' : placementKinds[illustration];
-  const utilityKind = host.matches('.visitor-activity-art') ? 'visitors'
-    : host.matches('.tour-radio-art') ? 'radio' : utilityKinds[illustration];
+  const utilityKind = host.matches('.visitor-activity-art') ? 'visitors' : utilityKinds[illustration];
   const kind = placementKind || utilityKind;
   if (!kind) return;
   const previous = host.querySelector(':scope > .qofeno-scene-canvas');
@@ -207,7 +196,7 @@ function refreshArt() {
     }
   }
   const hero = root.querySelector('.reference-hero');
-  if (hero && root.querySelector('.editorial-discovery') && !hero.querySelector('.qofeno-field-guide')) {
+  if (hero && root.querySelector('#qofeno-placement') && !hero.querySelector('.qofeno-field-guide')) {
     mountHero(hero);
   }
 
@@ -215,14 +204,6 @@ function refreshArt() {
   if (closing && !closing.querySelector('.qofeno-closing-canvas')) {
     mount(closing, createCanvas('qofeno-closing-canvas'), (ctx, width, height, progress) =>
       drawFieldGuide(ctx, width, height, progress, { variant: 'closing' }));
-  }
-
-  for (const mark of root.querySelectorAll(markSelector)) {
-    const kind = markKinds[mark.closest('.discovery-row').dataset.placementId];
-    if (!kind || mark.querySelector('.qofeno-discovery-canvas')) continue;
-    mark.dataset.qofenoKind = kind;
-    mount(mark, createCanvas('qofeno-discovery-canvas'), (ctx, width, height, progress) =>
-      drawDiscoveryMark(ctx, width, height, kind, progress), { duration: 920 });
   }
 
   for (const svg of root.querySelectorAll(sceneSelector)) mountScene(svg);
@@ -242,7 +223,7 @@ if (root && resize) {
       queued = false;
       refreshArt();
     });
-  }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-interface-illustration', 'data-open', 'data-tour-chapter', 'inert', 'open'] });
+  }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-interface-illustration', 'data-open', 'inert', 'open'] });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && animationFrame) {
       cancelAnimationFrame(animationFrame);

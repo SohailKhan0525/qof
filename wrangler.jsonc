@@ -1,7 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "qofeno",
-  "main": "vendor/production-worker.mjs",
+  "main": ".release/production/index.mjs",
+  "base_dir": ".release/production",
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": ["application.mjs", "board-presentation.mjs", "house-placement.mjs"]
+    }
+  ],
   "no_bundle": true,
   "compatibility_date": "2026-10-01",
   "compatibility_flags": [
@@ -79,5 +86,5 @@
       "custom_domain": true
     }
   ],
-  "find_additional_modules": false
+  "find_additional_modules": true
 }

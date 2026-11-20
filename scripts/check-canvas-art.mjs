@@ -78,13 +78,11 @@ try {
     await page.goto(origin, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.reference-hero[data-qofeno-drawn]')).toBeVisible();
     if (width === 1440) await checkDrawing(page);
-    await expect(page.locator('.discovery-monogram[data-qofeno-drawn]')).toHaveCount(6);
+    await expect(page.locator('#qofeno-placement')).toContainText('Active · Owner placement');
     if (width === 1440) {
       await page.locator('.qofeno-header-trigger').click();
       await checkScene(page, '.qofeno-navigation-board-art > .interface-illustration', 'ranking');
       await page.keyboard.press('Escape');
-      await page.locator('.product-tour-chapter').first().click();
-      await checkScene(page, '.tour-radio-art', 'radio');
     }
     await checkScene(page, '.visitor-activity-art', 'visitors');
     for (const kind of ['submit', 'review', 'ranking', 'expiry']) {
@@ -125,7 +123,7 @@ try {
   await expect(page.locator('.qofeno-field-guide-link')).toBeVisible();
   await expect(page.locator('.placement-process-submit [data-interface-illustration] > svg')).toHaveCSS('visibility', 'visible');
   await expect(page.locator('.reference-hero[data-qofeno-drawn]')).toHaveCount(0);
-  console.log('PASS Canvas unavailable: static artwork and the gallery link are visible');
+  console.log('PASS Canvas unavailable: static artwork and the owner placement link are visible');
 } finally {
   await browser.close();
 }

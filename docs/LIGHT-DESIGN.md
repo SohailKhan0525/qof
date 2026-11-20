@@ -24,11 +24,11 @@ Desktop 1440px and mobile 390px/320px are checked with a dark device preference 
 
 The original backend and client hashes are independently verified. Read-only deployed checks inspect public responses, asset security headers, search metadata, anonymous private-access rejection and production/test configuration isolation. Results are stored under `test-results/` while running; this is not a claim of a new penetration test, a load test or re-running the unavailable historical suite.
 
-## Field guide and editorial gallery
+## Previous field guide and editorial gallery
 
 [Uizze's public workflow guide](https://uizze.com/guides/ui-reference-workflow) recommends choosing references for a specific design decision. Qofeno used the public [Are.na](https://uizze.com/design/are-na), [A24](https://uizze.com/design/a24) and [Aardvark Book Club](https://uizze.com/design/aardvark-book-club) examples to study how products show their actual collections early. The homepage now previews real editorial picks in its artwork and links directly to the gallery. The gallery's covers distinguish each destination and its title, category and save action remain in HTML. The reference library and guides were sufficient for this work.
 
-`src/illustrations/open-web-art.mjs` draws the hero, six discovery covers and closing artwork with Canvas 2D. `src/illustrations/mount-art.mjs` mounts decorative canvases onto the existing client, repaints at layout size changes and caps rendering at 2× pixel density. The original static hero art and gallery initials provide fallback visuals. `src/styles/field-guide.css` and `src/styles/editorial-gallery.css` control composition and responsive behavior.
+`src/illustrations/open-web-art.mjs` draws the hero, six discovery covers and closing artwork with Canvas 2D. `src/illustrations/mount-art.mjs` mounts decorative canvases onto the existing client, repaints at layout size changes and caps rendering at 2× pixel density. The original static hero art and gallery initials provide fallback visuals. The former gallery stylesheet was retired when the site switched to a single website board.
 
 The placement guide, board examples, checkout illustration, visitor scene, walkthrough globe, FAQ, and illustrations on support, policy and account screens share the same paper artwork style. `placement-art.mjs` and `utility-art.mjs` draw these scenes as Canvas 2D paths and text. The painters take a normalized progress value so strokes and fills can build individually. `mount-art.mjs` runs a shared frame loop while illustrations are in view, pauses when they leave, and stops drawing once they finish. ResizeObserver keeps the bitmap aligned with its frame. A browser without Canvas 2D displays the static artwork.
 
@@ -45,3 +45,7 @@ Boardy’s public homepage uses Raleway for its display headings and keeps the r
 References: https://www.boardy.ai/ and https://uizze.com/.
 
 The desktop and mobile screenshots were exported in Shots using its Safari Light frame. The original PNG exports are in `public/brand/mockups/`.
+
+## Board-first layout
+
+The current homepage opens with a more compact two-column hero and puts the website board immediately below it. The Canvas headpiece illustrates the operator’s Qofeno placement. The board labels `loopproof.me` as an active owner placement and keeps it outside paid spend, rank and expiry calculations. The title and section hierarchy use Raleway and the interface uses Figtree. The previous discovery gallery and walkthrough are retired, including their menu and footer links, initial HTML, and RSS feed.
