@@ -246,3 +246,37 @@ body .reference-closing-orbit > svg {
     transform: none;
   }
 }
+
+/* Keep each original frame in the layout while the canvas loads or falls back. */
+.visitor-activity-art,
+.tour-radio-art {
+  position: relative;
+}
+
+.qofeno-scene-canvas {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: block;
+  max-width: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+[data-qofeno-drawn] > .qofeno-scene-canvas {
+  visibility: visible;
+}
+
+:is([data-interface-illustration], .visitor-activity-art, .tour-radio-art)[data-qofeno-drawn] > svg {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-qofeno-drawn] > .qofeno-scene-canvas {
+    animation: artwork-settle 580ms cubic-bezier(.22, 1, .36, 1) both;
+  }
+}
+
+@keyframes artwork-settle {
+  from { transform: translateY(6px); }
+  to { transform: translateY(0); }
+}

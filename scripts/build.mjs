@@ -20,10 +20,13 @@ async function writeArtworkModule(label, source) {
   return file;
 }
 
-const artwork = await readFile('src/illustrations/open-web-art.mjs', 'utf8');
-const painterFile = await writeArtworkModule('painter', artwork);
-const mountSource = await readFile('src/illustrations/mount-art.mjs', 'utf8');
-const mountFile = await writeArtworkModule('artwork', mountSource.replace('./open-web-art.mjs', `./${painterFile}`));
+let mountSource = await readFile('src/illustrations/mount-art.mjs', 'utf8');
+for (const [source, label] of [['open-web-art', 'painter'], ['placement-art', 'placement-art'], ['utility-art', 'utility-art']]) {
+  const artwork = await readFile(`src/illustrations/${source}.mjs`, 'utf8');
+  const painterFile = await writeArtworkModule(label, artwork);
+  mountSource = mountSource.replace(`./${source}.mjs`, `./${painterFile}`);
+}
+const mountFile = await writeArtworkModule('artwork', mountSource);
 const html=(await readFile('index.html','utf8'))
   .replace('<!-- QOFENO_LIGHT_STYLES -->',`<link rel="stylesheet" href="/assets/${name}"/>`)
   .replace('<!-- QOFENO_ACCESSIBILITY -->',`<script defer src="/assets/${adapterName}"></script>`)
