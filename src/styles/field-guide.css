@@ -1,0 +1,248 @@
+/* The hero and the discovery gallery share the look of an illustrated web directory. */
+body .reference-hero {
+  display: grid;
+  grid-template:
+    'intro artwork' auto
+    'headline artwork' auto
+    'actions artwork' 1fr
+    'terms terms' auto / minmax(0, 1fr) minmax(0, 1.12fr);
+  align-items: center;
+  column-gap: clamp(32px, 5vw, 82px);
+  min-height: 0;
+  padding: clamp(48px, 5vw, 76px) clamp(24px, 6vw, 92px) 30px;
+}
+
+body .reference-hero-kicker {
+  grid-area: intro;
+  margin: 0 0 28px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+body .reference-hero-kicker > span:first-child,
+body .reference-hero-kicker > span:last-child::before {
+  display: none;
+}
+
+body .reference-hero-stage {
+  grid-area: headline;
+  min-height: 0;
+  padding: 0;
+}
+
+body .reference-headline {
+  max-width: none;
+  font-size: clamp(64px, 8.35vw, 128px);
+  line-height: .92;
+}
+
+body .reference-hero-word {
+  opacity: 1 !important;
+}
+
+body .reference-hero .reference-headline-line {
+  display: flex;
+  justify-content: flex-start;
+  gap: .17em;
+}
+
+body .reference-hero .reference-headline-line:last-child {
+  margin-top: .02em;
+}
+
+body .reference-hero .reference-glyph-orbit {
+  visibility: hidden;
+}
+
+body .reference-hero-bottom {
+  grid-area: actions;
+  align-self: start;
+  max-width: 100%;
+  margin: 24px 0 0;
+  gap: 24px;
+}
+
+body .reference-hero .reference-hero-actions {
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px 22px;
+  width: auto;
+}
+
+body .reference-hero .reference-hero-actions .button {
+  flex: initial;
+  justify-content: space-between;
+  width: auto;
+  min-width: 0;
+  padding-inline: 18px;
+}
+
+body .reference-hero .hero-buy {
+  min-height: 44px;
+  font-size: 13px;
+  white-space: normal;
+}
+
+body .reference-hero-meta {
+  grid-area: terms;
+  margin: 26px 0 0;
+  padding-top: 20px;
+  font-size: 11px;
+}
+
+body .reference-hero::after {
+  grid-area: artwork;
+  align-self: center;
+  aspect-ratio: 620 / 493;
+  background: url('/brand/web-index.svg') center / contain no-repeat;
+  pointer-events: none;
+  content: '';
+}
+
+body .reference-hero[data-qofeno-drawn]::after,
+body .reference-hero:not([data-qofeno-drawn]) .qofeno-field-guide-canvas {
+  visibility: hidden;
+}
+
+.qofeno-field-guide {
+  grid-area: artwork;
+  z-index: 1;
+  min-width: 0;
+  align-self: center;
+  margin: 0;
+}
+
+.qofeno-field-guide-frame {
+  position: relative;
+  aspect-ratio: 620 / 455;
+}
+
+.qofeno-field-guide-canvas,
+.qofeno-closing-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.qofeno-field-guide figcaption {
+  display: flex;
+  justify-content: flex-end;
+  padding-inline: clamp(14px, 2.1vw, 30px);
+}
+
+.qofeno-field-guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--q-accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.qofeno-field-guide-link:is(:hover, :focus-visible) {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.qofeno-field-guide-link > span {
+  transition: transform .25s ease-out;
+}
+
+.qofeno-field-guide-link:hover > span {
+  transform: translateY(3px);
+}
+
+body .reference-closing-orbit {
+  aspect-ratio: 620 / 455;
+}
+
+body .reference-closing-orbit[data-qofeno-drawn] {
+  background: none;
+}
+
+body .reference-closing-orbit > svg {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 1020px) {
+  body .reference-hero {
+    column-gap: 32px;
+  }
+
+  body .reference-headline {
+    font-size: clamp(58px, 8.1vw, 83px);
+  }
+}
+
+@media (max-width: 730px) {
+  body .reference-hero {
+    grid-template: 'intro' 'headline' 'actions' 'artwork' 'terms' / minmax(0, 1fr);
+    padding-top: 38px;
+  }
+
+  body .reference-hero-kicker {
+    margin-bottom: 18px;
+    font-size: 12px;
+  }
+
+  body .reference-headline {
+    font-size: clamp(59px, 15.4vw, 100px);
+  }
+
+  body .reference-hero-bottom {
+    margin-top: 19px;
+    gap: 15px;
+  }
+
+  body .reference-hero .reference-hero-actions {
+    gap: 6px 12px;
+  }
+
+  body .reference-hero .hero-buy {
+    font-size: 12px;
+  }
+
+  .qofeno-field-guide,
+  body .reference-hero::after {
+    width: min(100%, 490px);
+    justify-self: center;
+    margin-top: 18px;
+  }
+
+  .qofeno-field-guide {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .qofeno-field-guide figcaption {
+    justify-content: flex-start;
+    padding-inline: 0;
+  }
+
+  body .reference-hero-meta {
+    margin-top: 16px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  body .reference-hero {
+    padding-inline: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qofeno-field-guide-link > span {
+    transition: none;
+  }
+
+  .qofeno-field-guide-link:hover > span {
+    transform: none;
+  }
+}
