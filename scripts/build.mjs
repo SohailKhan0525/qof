@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { boardClient } from './board-client.mjs';
+import { build } from 'esbuild';
 
 const assetDirectory = 'dist/assets';
 const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board'];
@@ -47,6 +48,20 @@ for (const [source, label] of painters) {
   const painterFile = await writeAsset(label, 'js', artwork);
   mountSource = mountSource.replace(`./${source}.mjs`, `./${painterFile}`);
 }
+const threeLicense = await readFile('node_modules/three/LICENSE', 'utf8');
+const placementView = await build({
+  entryPoints: ['src/illustrations/placement-view.mjs'],
+  bundle: true,
+  write: false,
+  minify: true,
+  platform: 'browser',
+  format: 'esm',
+  target: 'es2022',
+  legalComments: 'none',
+  banner: { js: `/*!\n${threeLicense.trimEnd()}\n*/` },
+});
+const placementViewFile = await writeAsset('placement-3d', 'js', placementView.outputFiles[0].contents);
+mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile}`);
 const mountFile = await writeAsset('artwork', 'js', mountSource);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
@@ -86,4 +101,4 @@ for (const environment of ['production', 'test']) {
     writeFile(`${directory}/house-placement.mjs`, housePlacement),
   ]);
 }
-console.log(`Built light design and animated Canvas artwork with integrity-checked entry assets: ${styleFile}.`);
+console.log(`Built the light design, Canvas artwork and optional Three.js scene: ${styleFile}.`);

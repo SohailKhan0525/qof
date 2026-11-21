@@ -9,8 +9,12 @@
     "deploy": "npm run build && wrangler deploy --keep-vars"
   },
   "devDependencies": {
-    "wrangler": "4.156.2",
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.64.1",
-    "@axe-core/playwright": "4.14.0"
+    "esbuild": "0.28.2",
+    "wrangler": "4.156.2"
+  },
+  "dependencies": {
+    "three": "0.187.0"
   }
 }

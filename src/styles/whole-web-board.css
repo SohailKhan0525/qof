@@ -342,3 +342,29 @@ body .rank-row {
     padding-inline: 12px;
   }
 }
+
+/* The optional scene fills the existing art panel without moving the board. */
+.house-placement-art {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.house-placement-art > canvas.qofeno-placement-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.house-placement-art[data-qofeno-sculpture='ready'] > canvas.qofeno-placement-scene {
+  visibility: visible;
+}
+
+.house-placement-art[data-qofeno-sculpture='ready'] > img {
+  visibility: hidden;
+}

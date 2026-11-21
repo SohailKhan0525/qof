@@ -4,7 +4,8 @@ import { drawUtilityArt } from './utility-art.mjs';
 
 const root = document.getElementById('root');
 const sceneSelector = '[data-interface-illustration] > svg, .visitor-activity-art > svg';
-const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}`;
+const sculptureSelector = '.house-placement-art';
+const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}, ${sculptureSelector}`;
 const placementKinds = { submit: 'submit', review: 'review', ranking: 'ranking', expiry: 'expiry', receipt: 'ticket' };
 const utilityKinds = { discover: 'discover', contact: 'message', privacy: 'recovery' };
 const canvases = new Map();
@@ -12,6 +13,31 @@ const layoutTargets = new WeakMap();
 const moving = new Set();
 const frameInterval = 1000 / 30;
 let animationFrame = 0;
+let sculptureHost;
+let stopSculpture;
+
+function watchSculpture(host) {
+  if (navigator.connection?.saveData || typeof WebGL2RenderingContext === 'undefined' ||
+      typeof IntersectionObserver === 'undefined') return;
+  let active = true;
+  let dispose;
+  const observer = new IntersectionObserver(async ([entry]) => {
+    if (!entry.isIntersecting) return;
+    observer.disconnect();
+    try {
+      const { mountPlacementSculpture } = await import('./placement-view.mjs');
+      if (active && host.isConnected) dispose = mountPlacementSculpture(host);
+    } catch (error) {
+      console.warn('Qofeno is using the static placement artwork.', error);
+    }
+  }, { rootMargin: '100px 0px' });
+  observer.observe(host);
+  return () => {
+    active = false;
+    observer.disconnect();
+    dispose?.();
+  };
+}
 
 function createCanvas(className) {
   const canvas = document.createElement('canvas');
@@ -189,6 +215,13 @@ function mountScene(svg) {
 }
 
 function refreshArt() {
+  const nextSculpture = root.querySelector(sculptureSelector);
+  if (nextSculpture !== sculptureHost) {
+    stopSculpture?.();
+    sculptureHost = nextSculpture;
+    stopSculpture = nextSculpture ? watchSculpture(nextSculpture) : null;
+  }
+
   for (const [canvas, entry] of canvases) {
     if (!canvas.isConnected || !entry.layout.isConnected) {
       forget(canvas);

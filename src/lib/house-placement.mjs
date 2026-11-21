@@ -11,10 +11,12 @@ export const HOUSE_PLACEMENT = Object.freeze({
   disclosure: 'Listed by Qofeno and excluded from paid ranking.',
 });
 
+const visitArrowPath = 'M3 13 13 3M5 3h8v8';
+
 // The field values are authored constants shared with the server-rendered board.
 export function housePlacementMarkup() {
   const site = HOUSE_PLACEMENT;
-  return `<article class="house-placement" id="${site.id}" aria-labelledby="house-placement-title"><div class="house-placement-layout"><div class="house-placement-copy"><p class="house-placement-label">${site.label}</p><h3 class="house-placement-title" id="house-placement-title">${site.title}</h3><p class="house-placement-host">${site.host}</p><p>${site.tagline}</p><p class="house-placement-disclosure">${site.disclosure}</p><a class="house-placement-link" href="${site.website}">Visit website <span aria-hidden="true">↗</span></a></div><div class="house-placement-art" aria-hidden="true"><img src="/brand/qofeno-icon.svg" alt="" width="96" height="96"/></div></div></article>`;
+  return `<article class="house-placement" id="${site.id}" aria-labelledby="house-placement-title"><div class="house-placement-layout"><div class="house-placement-copy"><p class="house-placement-label">${site.label}</p><h3 class="house-placement-title" id="house-placement-title">${site.title}</h3><p class="house-placement-host">${site.host}</p><p>${site.tagline}</p><p class="house-placement-disclosure">${site.disclosure}</p><a class="house-placement-link" href="${site.website}">Visit website <svg aria-hidden="true" viewBox="0 0 16 16" width="13" height="13"><path d="${visitArrowPath}" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a></div><div class="house-placement-art" aria-hidden="true"><img src="/brand/qofeno-icon.svg" alt="" width="96" height="96"/></div></div></article>`;
 }
 
 export function housePlacementElement({ jsx, jsxs }) {
@@ -29,7 +31,10 @@ export function housePlacementElement({ jsx, jsxs }) {
         jsx('p', { children: site.tagline }),
         jsx('p', { className: 'house-placement-disclosure', children: site.disclosure }),
         jsxs('a', { className: 'house-placement-link', href: site.website, children: [
-          'Visit website ', jsx('span', { 'aria-hidden': true, children: '↗' }),
+          'Visit website ', jsx('svg', {
+            'aria-hidden': true, viewBox: '0 0 16 16', width: 13, height: 13,
+            children: jsx('path', { d: visitArrowPath, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5 }),
+          }),
         ] }),
       ] }),
       jsx('div', { className: 'house-placement-art', 'aria-hidden': true,
