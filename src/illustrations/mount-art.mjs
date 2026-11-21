@@ -191,7 +191,7 @@ function mountHero(hero) {
   link.append(arrow);
   caption.append(link);
   figure.append(frame, caption);
-  mount(hero, canvas, drawFieldGuide, { content: figure, duration: 1580 });
+  mount(hero, canvas, drawFieldGuide, { content: figure, duration: 1330 });
 }
 
 function mountScene(svg) {

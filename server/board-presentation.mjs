@@ -98,10 +98,19 @@ function presentPage(response, pathname) {
       .on('#discover', removeElement)
       .on('#take-a-look', removeElement)
       .on('.reference-hero-kicker > span:nth-child(2)', {
-        element: element => element.setInnerContent('Independent websites. One shared board.'),
+        element: element => element.setInnerContent('A board for independent websites'),
+      })
+      .on('.reference-headline > .reference-headline-line:nth-child(1) .reference-hero-word:nth-child(2)', {
+        element: element => element.setInnerContent('room for'),
+      })
+      .on('.reference-headline > .reference-headline-line:nth-child(2) .reference-hero-word', {
+        element: element => element.setInnerContent('your website.'),
       })
       .on('.reference-hero-description', {
-        element: element => element.setInnerContent('Browse the board or add your own website. Paid placements run for 30 days after approval.'),
+        element: element => element.setInnerContent('Discover a site worth visiting, or give yours a 30-day placement on the board.'),
+      })
+      .on('.reference-hero-meta > span:nth-child(2)', {
+        element: element => element.setInnerContent('Reviewed before publication'),
       })
       .on('#board .section-heading .eyebrow', {
         element: element => element.setInnerContent('Active placements'),

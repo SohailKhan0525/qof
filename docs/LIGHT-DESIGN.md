@@ -57,3 +57,5 @@ The owner placement renders a small stack of paper plaques with the Qofeno mark 
 The Three.js bundle loads near the placement. It renders on demand, pauses offscreen, and responds to pointer movement with a small tilt. Reduced motion shows the scene at rest. The original badge fills the same space when WebGL2 is unavailable, the bundle fails to load, or the browser signals Save-Data. The implementation follows Three.js’s [on-demand rendering](https://threejs.org/manual/#en/rendering-on-demand) and [resource cleanup](https://threejs.org/manual/#en/cleanup) guides.
 
 Run `node scripts/check-placement-sculpture.mjs` to check load timing, pointer response, layout and fallback in Chromium. Set `QOFENO_CHECK_URL` to target a deployed site. The check blocks API writes.
+
+The hero now frames the illustrated browser proof more tightly and links the full image to the owner placement. A mint owner label appears in both the Canvas proof and the Three.js plaque. The [hero and Three.js research notes](HERO-AND-THREEJS-RESEARCH.md) record the public references behind these refinements.

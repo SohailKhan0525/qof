@@ -13,12 +13,12 @@ body .reference-hero-kicker {
 }
 
 body .reference-headline {
-  font: 500 clamp(51px, 6.75vw, 98px)/.99 var(--q-display);
+  font: 500 clamp(44px, 6.2vw, 89px)/1.03 var(--q-display);
   letter-spacing: -.054em;
 }
 
 body .reference-hero .reference-headline-line {
-  gap: .19em;
+  gap: .16em;
 }
 
 body .reference-hero-bottom {
@@ -66,6 +66,22 @@ body .reference-hero::after {
 
 .qofeno-field-guide-frame {
   overflow: hidden;
+}
+
+.qofeno-field-guide {
+  position: relative;
+}
+
+.qofeno-field-guide-link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  content: '';
+}
+
+.qofeno-field-guide-link:focus-visible::after {
+  outline: 2px solid var(--q-accent);
+  outline-offset: 4px;
 }
 
 .qofeno-field-guide figcaption {
@@ -269,7 +285,7 @@ body .rank-row {
   }
 
   body .reference-headline {
-    font-size: clamp(47px, 6.7vw, 65px);
+    font-size: clamp(40px, 5.9vw, 58px);
   }
 }
 
@@ -280,7 +296,7 @@ body .rank-row {
   }
 
   body .reference-headline {
-    font-size: clamp(46px, 13vw, 78px);
+    font-size: clamp(36px, 11.4vw, 76px);
   }
 
   body .reference-hero-bottom {
@@ -322,7 +338,7 @@ body .rank-row {
   }
 
   .house-placement-art {
-    min-height: 122px;
+    min-height: clamp(148px, 41vw, 176px);
     border-inline-start: 0;
     border-block-start: 1px solid #d4def0;
   }

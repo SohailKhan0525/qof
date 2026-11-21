@@ -35,13 +35,16 @@ export function boardClient(source, houseModule) {
     ['{id:`discover`,title:`Editorial discoveries`,description:`A few good finds, chosen independently.`},', ''],
     ['(0,P.jsx)(`a`,{href:`/#discover`,children:`Editorial discoveries`}),', ''],
     ['[`Are the editorial discoveries paid placements?`,`No. Editorial discoveries are selected separately to give visitors interesting websites to explore. They are labeled and kept outside the paid ranking. Buying a placement does not buy editorial selection or an endorsement.`],', ''],
-    ['Independent websites. A paid front row.', 'Independent websites. One shared board.'],
-    ['children:[`Independent websites.`,(0,P.jsx)(`br`,{}),`One shared place to be discovered.`]', 'children:`Browse the board or add your own website. Paid placements run for 30 days after approval.`'],
+    ['Independent websites. A paid front row.', 'A board for independent websites'],
+    ['className:`reference-hero-word`,children:`some`', 'className:`reference-hero-word`,children:`room for`'],
+    ['className:`reference-hero-word`,children:`room.`', 'className:`reference-hero-word`,children:`your website.`'],
+    ['children:[`Independent websites.`,(0,P.jsx)(`br`,{}),`One shared place to be discovered.`]', 'children:`Discover a site worth visiting, or give yours a 30-day placement on the board.`'],
     ['Discover independent websites through editorial picks and a readable paid ranking.', 'Browse active websites and list your own on Qofeno.'],
     ['Explore the Qofeno paid board and editorial discoveries or contact support@loopproof.me.', 'Explore the Qofeno website board or contact support@loopproof.me.'],
     ['Editorial discoveries are selected separately from paid placements; payment does not buy editorial selection.', 'The Qofeno owner placement is labeled and excluded from paid ranking.'],
     ['Editorial discoveries are separate from paid advertisements and do not imply a partnership with the featured website.', 'Qofeno’s own placement is labeled and excluded from paid ranking.'],
     ['Saved placements and editorial discoveries are stored as IDs', 'Any previously saved placements are stored as IDs'],
+    ['30 days per purchase · Your link included', 'Reviewed before publication'],
   ];
   for (const [search, replacement] of edits) client = replaceOnce(client, search, replacement);
   return `import { housePlacementElement as renderHousePlacement } from './${houseModule}';\n${client}`;

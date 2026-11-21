@@ -309,7 +309,7 @@ function websiteProof(ctx, width, height, progress) {
   }
   ctx.fillStyle = ink;
   ctx.font = '600 15px Figtree, Arial, sans-serif';
-  printText(ctx, 'loopproof.me', 83, 31, stage(progress, .07, .53));
+  ctx.fillText('loopproof.me', 83, 31);
   ctx.strokeStyle = '#c9ba9f';
   ctx.beginPath();
   traceLine(ctx, 0, 53, width, 53, stage(progress, 0, .48));
@@ -340,9 +340,9 @@ function websiteProof(ctx, width, height, progress) {
   ctx.restore();
   ctx.fillStyle = cream;
   ctx.font = '600 52px Raleway, Arial, sans-serif';
-  printText(ctx, 'Qofeno.', 27, 100, stage(progress, .17, .72));
+  ctx.fillText('Qofeno.', 27, 100);
   ctx.font = '500 18px Figtree, Arial, sans-serif';
-  printText(ctx, 'Independent website board', 30, 138, stage(progress, .48, .92));
+  ctx.fillText('The website board', 30, 138);
   star(ctx, globeX - 78, globeY + 55, 8 * stage(progress, .70, .94), '#ffcf76');
   ctx.restore();
 }
@@ -355,13 +355,13 @@ function hero(ctx, progress) {
   });
   paper(ctx, 52 + 6 * arrival, 83 + 6 * arrival, 497, 292, -.032 + .03 * arrival, '#fff8e9', '#baad96',
     (surface, width, height) => websiteProof(surface, width, height, progress));
-  const revealed = stage(progress, .28, .92);
-  paper(ctx, 374 + 8 * (1 - revealed), 345, 171, 48, -.08, mint, '#6f9886', (surface, width, height) => {
+  const unsettled = 1 - stage(progress, .30, .9);
+  paper(ctx, 374 + 12 * unsettled, 345 + 5 * unsettled, 171, 48, -.08 + .055 * unsettled, mint, '#6f9886', (surface, width, height) => {
     grain(surface, width, height, '#315d4f2e');
-    circle(surface, 21, 24, 4 * revealed, '#225642');
+    circle(surface, 21, 24, 4, '#225642');
     surface.fillStyle = '#214536';
     surface.font = '700 16px Figtree, Arial, sans-serif';
-    printText(surface, 'Owner placement', 34, 30, revealed);
+    surface.fillText('Owner placement', 34, 30);
   });
 }
 
@@ -420,7 +420,10 @@ function envelope(ctx, progress) {
 export function drawFieldGuide(ctx, width, height, progress = 1, { variant = 'hero' } = {}) {
   ctx.clearRect(0, 0, width, height);
   if (width <= 0 || height <= 0) return;
-  const scaled = Math.min(width / designWidth, height / designHeight);
+  const isClosing = variant === 'closing';
+  const scaled = isClosing
+    ? Math.min(width / designWidth, height / designHeight)
+    : Math.min(width / 566, height / 414);
   ctx.save();
   ctx.translate((width - designWidth * scaled) / 2, (height - designHeight * scaled) / 2);
   ctx.scale(scaled, scaled);
@@ -428,7 +431,7 @@ export function drawFieldGuide(ctx, width, height, progress = 1, { variant = 'he
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   const settled = Math.max(0, Math.min(1, progress));
-  if (variant === 'closing') envelope(ctx, settled);
+  if (isClosing) envelope(ctx, settled);
   else hero(ctx, settled);
   ctx.restore();
 }

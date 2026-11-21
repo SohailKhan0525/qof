@@ -77,7 +77,13 @@ try {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.reference-hero[data-qofeno-drawn]')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Make room for your website.');
     if (width === 1440) await checkDrawing(page);
+    const preview = page.locator('.qofeno-field-guide-frame');
+    await preview.scrollIntoViewIfNeeded();
+    const frame = await preview.boundingBox();
+    await page.mouse.click(frame.x + frame.width / 2, frame.y + frame.height / 2);
+    await expect(page).toHaveURL(/#qofeno-placement$/);
     await expect(page.locator('#qofeno-placement')).toContainText('Active · Owner placement');
     if (width === 1440) {
       await page.locator('.qofeno-header-trigger').click();

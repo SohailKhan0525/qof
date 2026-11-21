@@ -24,8 +24,8 @@ const palette = {
   paperEdge: '#dfcda8',
   cobalt: '#2558be',
   blueEdge: '#183e89',
-  mint: '#a9d4be',
-  greenInk: '#1d5347',
+  mint: '#a8d3bd',
+  greenInk: '#214536',
   ink: '#193651',
 };
 
@@ -130,6 +130,33 @@ function plaqueTexture() {
   return texture;
 }
 
+function ownerTabTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 122;
+  const context = canvas.getContext('2d');
+  if (!context) return null;
+
+  context.strokeStyle = '#35645270';
+  context.lineWidth = 2.5;
+  context.beginPath();
+  context.roundRect(11, 11, 490, 100, 12);
+  context.stroke();
+
+  context.fillStyle = palette.greenInk;
+  context.beginPath();
+  context.arc(51, 61, 9, 0, Math.PI * 2);
+  context.fill();
+  context.font = '700 48px Figtree, system-ui, sans-serif';
+  context.textBaseline = 'middle';
+  context.fillText('Owner placement', 77, 62, 400);
+
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.anisotropy = 2;
+  return texture;
+}
+
 export function createPlacementSculpture() {
   const scene = new Scene();
   const camera = new OrthographicCamera(-2.4, 2.4, 1.6, -1.6, 0.1, 30);
@@ -161,6 +188,16 @@ export function createPlacementSculpture() {
     return mesh;
   }
 
+  function print(width, height, texture, position, rotate = 0) {
+    if (!texture) return;
+    const mesh = new Mesh(new PlaneGeometry(width, height), new MeshBasicMaterial({
+      map: texture, transparent: true, depthWrite: false, toneMapped: false,
+    }));
+    mesh.position.set(...position);
+    mesh.rotation.z = rotate;
+    plaque.add(mesh);
+  }
+
   const shadowTexture = makeContactShadow();
   const shadow = new Mesh(new PlaneGeometry(5.8, 4.7), new MeshBasicMaterial({
     map: shadowTexture, transparent: true, depthWrite: false, toneMapped: false,
@@ -173,10 +210,10 @@ export function createPlacementSculpture() {
   plate(3.77, 2.09, 0.05, 0.11, paperEdge, paperEdge, [-0.1, -0.075, -0.16], -0.075);
   plate(3.73, 2.09, 0.13, 0.105, paper, paperEdge, [0, 0, -0.045]);
 
-  // This thumb tab interleaves with the paper, leaving just its outer edge exposed.
-  plate(0.86, 0.43, 0.06, 0.078, mint, green, [1.7, -0.76, -0.108], 0.055);
-  plate(0.15, 0.018, 0.015, 0.007, green, green, [2.02, -0.77, -0.023], 0.055);
-  plate(0.1, 0.018, 0.015, 0.007, green, green, [2.02, -0.83, -0.023], 0.055);
+  // The hero's mint owner label reappears as a printed tab on the physical card.
+  plate(1.9, 0.45, 0.045, 0.07, mint, green, [1.19, -0.93, 0.139], -0.08);
+  const tabTexture = ownerTabTexture();
+  print(1.9, 0.45, tabTexture, [1.19, -0.93, 0.213], -0.08);
 
   const disk = plate(1.25, 1.25, 0.021, 0.625, paperEdge, paper, [-1.05, 0.02, 0.095]);
   disk.scale.set(0.98, 0.98, 1);
@@ -194,13 +231,7 @@ export function createPlacementSculpture() {
   }
 
   const inkTexture = plaqueTexture();
-  if (inkTexture) {
-    const ink = new Mesh(new PlaneGeometry(3.72, 2.08), new MeshBasicMaterial({
-      map: inkTexture, transparent: true, depthWrite: false, toneMapped: false,
-    }));
-    ink.position.z = 0.119;
-    plaque.add(ink);
-  }
+  print(3.72, 2.08, inkTexture, [0, 0, 0.119]);
 
   scene.add(new HemisphereLight(new Color('#faf7ed'), new Color('#8ba6d4'), 1.63));
   const key = new DirectionalLight('#fff8e9', 2.25);
@@ -211,7 +242,7 @@ export function createPlacementSculpture() {
   scene.add(rim);
 
   function fit(aspect) {
-    const height = Math.max(2.94, 4.85 / aspect);
+    const height = Math.max(3.18, 4.92 / aspect);
     camera.left = -height * aspect / 2;
     camera.right = height * aspect / 2;
     camera.top = height / 2;
@@ -230,6 +261,7 @@ export function createPlacementSculpture() {
     materials.forEach(material => material.dispose());
     shadowTexture.dispose();
     inkTexture?.dispose();
+    tabTexture?.dispose();
     scene.clear();
   }
 
