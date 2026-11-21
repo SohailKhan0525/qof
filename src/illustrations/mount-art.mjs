@@ -173,6 +173,64 @@ function forget(canvas) {
   host.removeAttribute('data-qofeno-art-phase');
 }
 
+function watchHeroImpression(hero, figure, frame, base) {
+  const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
+  if (!globalThis.CSS?.supports('mask-image', 'radial-gradient(black, transparent)')) return;
+
+  let impression;
+  let context;
+  let pendingFrame = 0;
+  let pointerX = 0;
+  let pointerY = 0;
+
+  function hideImpression() {
+    cancelAnimationFrame(pendingFrame);
+    pendingFrame = 0;
+    frame.removeAttribute('data-qofeno-impression');
+  }
+
+  function showImpression() {
+    pendingFrame = 0;
+    if (!finePointer.matches || !frame.isConnected || hero.dataset.qofenoArtPhase !== 'settled') return;
+    const bounds = frame.getBoundingClientRect();
+    const x = (pointerX - bounds.left) / bounds.width;
+    const y = (pointerY - bounds.top) / bounds.height;
+    if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) {
+      hideImpression();
+      return;
+    }
+
+    if (!impression) {
+      impression = createCanvas('qofeno-field-guide-impression');
+      context = impression.getContext('2d');
+    }
+    if (!context) return;
+
+    // Cache a registered second impression. Pointer movement only moves its mask.
+    if (!impression.isConnected || impression.width !== base.width || impression.height !== base.height) {
+      const { clientWidth: width, clientHeight: height } = base;
+      if (!width || !height) return;
+      impression.width = base.width;
+      impression.height = base.height;
+      context.setTransform(base.width / width, 0, 0, base.height / height, 0, 0);
+      drawFieldGuide(context, width, height, 1, { variant: 'impression' });
+      if (!impression.isConnected) frame.append(impression);
+    }
+    frame.style.setProperty('--q-impression-x', `${x * 100}%`);
+    frame.style.setProperty('--q-impression-y', `${y * 100}%`);
+    frame.setAttribute('data-qofeno-impression', '');
+  }
+
+  figure.addEventListener('pointermove', event => {
+    if (!finePointer.matches || event.pointerType === 'touch') return;
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    if (!pendingFrame) pendingFrame = requestAnimationFrame(showImpression);
+  }, { passive: true });
+  figure.addEventListener('pointerleave', hideImpression);
+  figure.addEventListener('pointercancel', hideImpression);
+}
+
 function mountHero(hero) {
   const figure = document.createElement('figure');
   figure.className = 'qofeno-field-guide';
@@ -192,6 +250,7 @@ function mountHero(hero) {
   caption.append(link);
   figure.append(frame, caption);
   mount(hero, canvas, drawFieldGuide, { content: figure, duration: 1330 });
+  watchHeroImpression(hero, figure, frame, canvas);
 }
 
 function mountScene(svg) {

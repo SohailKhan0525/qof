@@ -6,6 +6,20 @@ const mint = '#a8d3bd';
 const designWidth = 620;
 const designHeight = 455;
 const grainPaths = new Map();
+let atlasTexture;
+
+const proofs = {
+  hero: {
+    panel: cobalt, panelEdge: '#214389', ring: '#c9d9ffac',
+    ocean: cream, land: '#96c7a9', globeEdge: '#173b83', globeShadow: '#16326d',
+    grid: '#315e8e78', pin: coral, otherPins: cobalt, pinEdge: cream,
+  },
+  impression: {
+    panel: '#22264e', panelEdge: '#151b38', ring: '#f5d79ba3',
+    ocean: '#383764', land: '#9b805c', globeEdge: '#f9dc9d', globeShadow: '#171b3b',
+    grid: '#fff0c1b6', pin: '#f6c276', otherPins: '#f1e4c7', pinEdge: '#343456',
+  },
+};
 
 function roundedRect(ctx, x, y, width, height, radius, fill, stroke) {
   ctx.beginPath();
@@ -208,8 +222,8 @@ function windowScene(ctx, x, y, width, height, progress = 1) {
   ctx.restore();
 }
 
-function landforms(ctx) {
-  ctx.fillStyle = '#96c7a9';
+function landforms(ctx, color) {
+  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(-107, -48);
   ctx.bezierCurveTo(-93, -61, -77, -64, -59, -60);
@@ -260,12 +274,12 @@ function landforms(ctx) {
   ctx.fill();
 }
 
-function globe(ctx, x, y, progress = 1) {
+function globe(ctx, x, y, progress = 1, proof = proofs.hero) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(-.21);
-  circle(ctx, 3, 5, 108, '#16326d');
-  circle(ctx, 0, 0, 108, cream, '#173b83');
+  circle(ctx, 3, 5, 108, proof.globeShadow);
+  circle(ctx, 0, 0, 108, proof.ocean, proof.globeEdge);
   ctx.save();
   ctx.clip();
   const mapProgress = stage(progress, 0, .59);
@@ -273,9 +287,9 @@ function globe(ctx, x, y, progress = 1) {
   ctx.beginPath();
   ctx.rect(-108, -108, 216 * mapProgress, 216);
   ctx.clip();
-  landforms(ctx);
+  landforms(ctx, proof.land);
   ctx.restore();
-  ctx.strokeStyle = '#315e8e60';
+  ctx.strokeStyle = proof.grid;
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (const [index, longitude] of [73, 33].entries()) {
@@ -291,15 +305,15 @@ function globe(ctx, x, y, progress = 1) {
   ctx.stroke();
   ctx.restore();
 
-  const points = [[-36, -23, 7, coral], [50, -34, 6, cobalt], [27, 43, 4, cobalt]];
+  const points = [[-36, -23, 7, proof.pin], [50, -34, 6, proof.otherPins], [27, 43, 4, proof.otherPins]];
   for (const [index, [pinX, pinY, radius, colour]] of points.entries()) {
     const stamped = stage(progress, .45 + index * .095, .64 + index * .095);
-    if (stamped > 0) circle(ctx, pinX, pinY, radius * stamped, colour, cream);
+    if (stamped > 0) circle(ctx, pinX, pinY, radius * stamped, colour, proof.pinEdge);
   }
   ctx.restore();
 }
 
-function websiteProof(ctx, width, height, progress) {
+function websiteProof(ctx, width, height, progress, proof) {
   grain(ctx, width, height, '#87674c20');
   ctx.fillStyle = '#f9efdc';
   ctx.fillRect(0, 0, width, 53);
@@ -320,13 +334,13 @@ function websiteProof(ctx, width, height, progress) {
   const contentY = 76;
   const contentWidth = width - 52;
   const contentHeight = height - 102;
-  roundedRect(ctx, contentX, contentY, contentWidth, contentHeight, 5, cobalt, '#214389');
+  roundedRect(ctx, contentX, contentY, contentWidth, contentHeight, 5, proof.panel, proof.panelEdge);
   ctx.clip();
   ctx.translate(contentX, contentY);
   grain(ctx, contentWidth, contentHeight, '#ffffff36');
   const globeX = contentWidth - 102;
   const globeY = contentHeight / 2;
-  ctx.strokeStyle = '#bfd0fd98';
+  ctx.strokeStyle = proof.ring;
   ctx.lineWidth = 1;
   ctx.setLineDash([2, 5]);
   ctx.beginPath();
@@ -336,7 +350,7 @@ function websiteProof(ctx, width, height, progress) {
   ctx.save();
   ctx.translate(globeX, globeY);
   ctx.scale(.73, .73);
-  globe(ctx, 0, 0, stage(progress, .10, .86));
+  globe(ctx, 0, 0, .43 + .57 * stage(progress, .10, .86), proof);
   ctx.restore();
   ctx.fillStyle = cream;
   ctx.font = '600 52px Raleway, Arial, sans-serif';
@@ -347,14 +361,78 @@ function websiteProof(ctx, width, height, progress) {
   ctx.restore();
 }
 
-function hero(ctx, progress) {
+function prepareAtlas() {
+  const contours = new Path2D();
+  const dots = new Path2D();
+  // Broad folds lead toward the card from opposite corners of the printing plate.
+  for (let index = 0; index < 8; index++) {
+    const gap = 12 * index;
+    contours.moveTo(322 + gap, -42);
+    contours.bezierCurveTo(391 + gap, 75, 473 + gap, 10, 506 + gap, 53);
+    contours.bezierCurveTo(547 + gap, 108, 509 + gap, 162, 651 + gap, 198);
+    contours.moveTo(-45, 224 + gap);
+    contours.bezierCurveTo(61, 227 + gap, 36, 297 + gap, 105, 319 + gap);
+    contours.bezierCurveTo(181, 345 + gap, 197, 309 + gap, 248, 367 + gap);
+    contours.bezierCurveTo(285, 412 + gap, 314, 423 + gap, 383, 433 + gap);
+  }
+  // Distinct, softly tapering halftone deposits suggest ink rolled onto paper.
+  for (const [centerX, centerY, width, height] of [[98, 84, 149, 67], [542, 298, 111, 155]]) {
+    for (let column = -width; column < width; column += 6) {
+      for (let row = -height; row < height; row += 6) {
+        const strength = 1 - Math.hypot(column / width, row / height);
+        if (strength <= .11) continue;
+        const x = centerX + column;
+        const y = centerY + row + (column % 12 ? 3 : 0);
+        const radius = .24 + .83 * strength;
+        dots.moveTo(x + radius, y);
+        dots.arc(x, y, radius, 0, Math.PI * 2);
+      }
+    }
+  }
+  return { contours, dots };
+}
+
+function printAtlas(ctx) {
+  atlasTexture ??= prepareAtlas();
+  ctx.save();
+  ctx.lineWidth = .95;
+  ctx.strokeStyle = '#637ca44e';
+  ctx.stroke(atlasTexture.contours);
+  ctx.fillStyle = '#617aa655';
+  ctx.fill(atlasTexture.dots);
+  grain(ctx, designWidth, designHeight, '#61594920');
+
+  ctx.strokeStyle = '#5f779a76';
+  ctx.setLineDash([2, 6]);
+  ctx.beginPath();
+  ctx.moveTo(37, 352);
+  ctx.bezierCurveTo(157, 440, 475, 83, 571, 105);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  for (const [x, y] of [[37, 352], [571, 105]]) {
+    circle(ctx, x, y, 7, null, '#637ca488');
+    circle(ctx, x, y, 2.2, '#637ca4be');
+  }
+
+  ctx.strokeStyle = '#8e836970';
+  ctx.beginPath();
+  line(ctx, 29, 57, 29, 41);
+  line(ctx, 29, 41, 45, 41);
+  line(ctx, 576, 408, 592, 408);
+  line(ctx, 592, 408, 592, 392);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function hero(ctx, progress, proof) {
   const arrival = 1 - stage(progress, 0, .8);
-  paper(ctx, 84, 67 + 9 * arrival, 448, 314, .076, '#d7e6fb', '#829fca', (surface, width, height) => {
-    grain(surface, width, height, '#315e8e30');
-    roundedRect(surface, 13, 13, width - 26, height - 26, 3, null, '#9ab0d1');
+  printAtlas(ctx);
+  paper(ctx, 84, 67 + 9 * arrival, 448, 314, .076, '#e0e8f2', '#8a9fbc', (surface, width, height) => {
+    grain(surface, width, height, '#315e8e2e');
+    roundedRect(surface, 13, 13, width - 26, height - 26, 3, null, '#91a6c3');
   });
   paper(ctx, 52 + 6 * arrival, 83 + 6 * arrival, 497, 292, -.032 + .03 * arrival, '#fff8e9', '#baad96',
-    (surface, width, height) => websiteProof(surface, width, height, progress));
+    (surface, width, height) => websiteProof(surface, width, height, progress, proof));
   const unsettled = 1 - stage(progress, .30, .9);
   paper(ctx, 374 + 12 * unsettled, 345 + 5 * unsettled, 171, 48, -.08 + .055 * unsettled, mint, '#6f9886', (surface, width, height) => {
     grain(surface, width, height, '#315d4f2e');
@@ -432,7 +510,7 @@ export function drawFieldGuide(ctx, width, height, progress = 1, { variant = 'he
   ctx.lineJoin = 'round';
   const settled = Math.max(0, Math.min(1, progress));
   if (isClosing) envelope(ctx, settled);
-  else hero(ctx, settled);
+  else hero(ctx, settled, variant === 'impression' ? proofs.impression : proofs.hero);
   ctx.restore();
 }
 

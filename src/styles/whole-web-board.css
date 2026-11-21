@@ -1,7 +1,7 @@
 /* Give the board an early place in the page. The type and gutters come from the site-wide grid. */
 body .reference-hero {
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
-  column-gap: clamp(24px, 5vw, 72px);
+  grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr);
+  column-gap: clamp(24px, 4vw, 64px);
   padding-block: clamp(38px, 4.1vw, 58px) 22px;
 }
 
@@ -55,8 +55,9 @@ body .reference-hero-meta {
 body .reference-hero::after,
 .qofeno-field-guide-frame {
   aspect-ratio: 8 / 5;
-  border-radius: 14px;
-  background-color: #e7edf8;
+  border-radius: 12px;
+  background-color: #f0eadc;
+  box-shadow: inset 0 0 0 1px #e1d7c6;
 }
 
 body .reference-hero::after {
@@ -72,10 +73,35 @@ body .reference-hero::after {
   position: relative;
 }
 
+.qofeno-field-guide-impression {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .qofeno-field-guide-impression {
+    --q-impression-radius: clamp(80px, 13vw, 160px);
+    visibility: visible;
+    opacity: 0;
+    mask-image: radial-gradient(circle var(--q-impression-radius)
+      at var(--q-impression-x, 50%) var(--q-impression-y, 50%),
+      #000 24%, #000b 57%, transparent 100%);
+    transition: opacity .28s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  [data-qofeno-impression] > .qofeno-field-guide-impression {
+    opacity: 1;
+  }
+}
+
 .qofeno-field-guide-link::after {
   position: absolute;
   inset: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   content: '';
 }
 

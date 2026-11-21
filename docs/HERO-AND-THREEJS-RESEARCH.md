@@ -74,3 +74,37 @@ X search returned HTTP 403 in the cloud browser. Public search index results led
 28. **[WebGPU] Hashing Spaces: Procedural Volume Noise and Shape generation** by Subroto Biswas. Generate restrained paper textures procedurally instead of shipping large images. [X post](https://x.com/phoenisx_/status/2102642668929183856) · [Showcase](https://discourse.threejs.org/t/webgpu-hashing-spaces-procedural-volume-noise-and-shape-generation/94654/1)
 29. **Wanna edit shaders with nodes like its R77?** by Tom Janssens. Define the paper face, the edge, and the ink as explicit materials so lighting remains deliberate. [X post](https://x.com/ToJans/status/2052781559158030791) · [Showcase](https://discourse.threejs.org/t/wanna-edit-shaders-with-nodes-like-its-r77/91608/8)
 30. **Stadium seat-view preview** by thebuggeddev. Give potential buyers a truthful view of where a placement appears in the actual product. [X post](https://x.com/thebuggeddev/status/2078101519908634983)
+
+## Video follow-up
+
+Both supplied MP4s were decoded at 30 fps. The frame comparison covered all 719 video frames. Shot boundaries and key changes within shots were also reviewed visually from contact sheets.
+
+### Elaya’s Relay hero
+
+All 279 frames show one 9.3-second composition. The navigation, copy, and buttons hold their positions. The changing region follows the pointer across a figure drawn in the same pose in both images. The mask exposes areas around the hat and shoulder at the start, the cape and arm near two seconds, the lower figure around four to five seconds, and the face, chest, and shoulder in the final passes. The shared silhouette makes a change of outfit feel like a change of material. [Original post](https://x.com/elayadesigns/status/2088200103719059700/video/1)
+
+### Lucas’s landing-page reel
+
+The 440 video frames span 14.67 seconds and form 11 shots. The cuts occur every 40 frames.
+
+| Start | Shot | Design observation |
+| --- | --- | --- |
+| 0:00.00 | Illustrated coastal footer | A cream paper field and cobalt landscape carry the identity across the full surface. |
+| 0:01.33 | Traffic-light spending panel | The signal and readable figures communicate the same spending boundary. |
+| 0:02.67 | Lighthouse hero | The beam directs attention across the image while the call to action stays in a quiet area. |
+| 0:04.00 | Fable cooking hero | A warm background and one painted subject give a simple split composition character. |
+| 0:05.33 | Restorative sleep | A single luminous silhouette supplies the contrast while the text keeps a consistent position. |
+| 0:06.67 | Relay designer hero | Localized image swaps create movement inside a stable portrait. |
+| 0:08.00 | Relay marionette | A hand and puppet make the idea of control recognizable through small movements. |
+| 0:09.33 | AI search hero | A small spark becomes a field of rings around the central headline. |
+| 0:10.67 | Travel cockpit | The dashboard frames the view and establishes the subject before the copy is read. |
+| 0:12.00 | Astronaut 404 | A particular visual idea and a clear return action give the error page personality. |
+| 0:13.33 | Pricing calculator | Calm alignment and restrained controls keep a consequential choice easy to read. |
+
+[Original reel](https://x.com/lucass0x/status/2122446754943758460/video/1)
+
+### Application to Qofeno
+
+The hero keeps its browser proof and layered paper. A drawn atlas field gives the proof more room and uses contour lines and halftone to suggest printed material. The globe and label are visible from the first frame. A fine pointer reveals an aligned indigo-and-gold impression within the artwork. The mask tracks the pointer and fades on exit while the existing link still opens the live owner placement.
+
+The second Canvas 2D bitmap is drawn once at its current size and reused as the mask moves. Touch and reduced-motion settings get the standard artwork. Canvas registration and the CSS mask use the platform’s rendering APIs. [Canvas optimization guide](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas) · [CSS mask-image reference](https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image)

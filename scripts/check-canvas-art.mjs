@@ -15,12 +15,13 @@ for (const name of ['board', 'session', 'status', 'visitors']) {
   fixtures.set(`/api/${name}`, await readFile(`tests/fixtures/${name}.json`, 'utf8'));
 }
 
-async function createPage(width) {
+async function createPage(width, options = {}) {
   const context = await browser.newContext({
     viewport: { width, height: 850 },
     deviceScaleFactor: 2,
     ignoreHTTPSErrors: true,
     reducedMotion: 'reduce',
+    ...options,
   });
   await context.route('**/api/**', route => {
     if (route.request().method() !== 'GET') return route.abort();
@@ -70,7 +71,96 @@ async function checkDrawing(page) {
   assert.notEqual(await bitmap(), first, 'Completed art should contain different pixels');
 }
 
+const impressionSelector = '.qofeno-field-guide-impression';
+
+async function settledProof(page) {
+  await expect(page.locator('.reference-hero')).toHaveAttribute('data-qofeno-art-phase', 'settled');
+  const proof = page.locator('.qofeno-field-guide-frame');
+  await proof.scrollIntoViewIfNeeded();
+  return proof;
+}
+
+function changedInkPixels(frame) {
+  return frame.evaluate(element => {
+    const proof = element.querySelector('.qofeno-field-guide-canvas');
+    const impression = element.querySelector('.qofeno-field-guide-impression');
+    const { width, height } = proof;
+    const base = proof.getContext('2d').getImageData(0, 0, width, height).data;
+    const overlay = impression.getContext('2d').getImageData(0, 0, width, height).data;
+    let changed = 0;
+    for (let y = 0; y < height; y += 8) {
+      for (let x = 0; x < width; x += 8) {
+        const i = (y * width + x) * 4;
+        const difference = Math.abs(overlay[i] - base[i]) + Math.abs(overlay[i + 1] - base[i + 1]) +
+          Math.abs(overlay[i + 2] - base[i + 2]);
+        if (difference * overlay[i + 3] / 255 > 30) changed++;
+      }
+    }
+    return changed;
+  });
+}
+
+async function checkPointerImpression(page) {
+  const frame = await settledProof(page);
+  const impression = frame.locator(impressionSelector);
+  const active = page.locator('.qofeno-field-guide-frame[data-qofeno-impression]');
+  const canvas = frame.locator('.qofeno-field-guide-canvas');
+  const original = await frame.screenshot();
+  const bounds = await frame.boundingBox();
+  const y = bounds.y + bounds.height * .52;
+  const left = bounds.x + bounds.width * .34;
+  const right = bounds.x + bounds.width * .68;
+  await expect(impression).toHaveCount(0);
+  await page.mouse.move(left, y);
+  await expect(active).toHaveCount(1);
+  await expect(impression).toHaveAttribute('aria-hidden', 'true');
+  await expect(impression).toHaveCSS('pointer-events', 'none');
+  const dimensions = node => [node.width, node.height, node.clientWidth, node.clientHeight];
+  assert.deepEqual(await impression.evaluate(dimensions), await canvas.evaluate(dimensions));
+  assert.ok(await changedInkPixels(frame) > 60, 'The print layer should change the look of the artwork');
+  await expect(impression).toHaveCSS('opacity', '1');
+  await expect(impression).toHaveCSS('mask-image', /radial-gradient/);
+  const leftState = await frame.screenshot();
+  assert.ok(!leftState.equals(original), 'The artwork should visibly change under the pointer');
+  const maskImage = () => impression.evaluate(node => getComputedStyle(node).maskImage);
+  const leftMask = await maskImage();
+  await page.mouse.move(right, y);
+  await expect.poll(maskImage).not.toBe(leftMask);
+  assert.ok(!(await frame.screenshot()).equals(leftState), 'Moving the pointer should reveal a different part of the artwork');
+
+  await page.mouse.move(1, 1);
+  await expect(active).toHaveCount(0);
+  await expect.poll(() => frame.evaluate(element => {
+    const layer = element.querySelector('.qofeno-field-guide-impression');
+    if (!layer) return true;
+    const { visibility, opacity, display } = getComputedStyle(layer);
+    return visibility === 'hidden' || Number(opacity) === 0 || display === 'none';
+  })).toBe(true);
+  assert.ok((await frame.screenshot()).equals(original), 'The effect should restore the original proof on leave');
+
+  await page.mouse.move(right, y);
+  await expect(active).toHaveCount(1);
+  await page.mouse.click(right, y);
+  await expect(page).toHaveURL(/#qofeno-placement$/);
+}
+
 try {
+  const desktop = await createPage(1440, { reducedMotion: 'no-preference' });
+  await desktop.goto(origin, { waitUntil: 'domcontentloaded' });
+  await checkPointerImpression(desktop);
+  await desktop.context().close();
+  console.log('PASS desktop impression: localized ink moves with the pointer, clears on leave and preserves the placement link');
+
+  const touch = await createPage(390, { reducedMotion: 'no-preference', isMobile: true, hasTouch: true });
+  await touch.goto(origin, { waitUntil: 'domcontentloaded' });
+  const touchFrame = await settledProof(touch);
+  const touchBounds = await touchFrame.boundingBox();
+  await touch.touchscreen.tap(touchBounds.x + touchBounds.width / 2, touchBounds.y + touchBounds.height / 2);
+  await expect(touch).toHaveURL(/#qofeno-placement$/);
+  await expect(touchFrame.locator(impressionSelector)).toHaveCount(0);
+  await touch.context().close();
+  console.log('PASS touch: the placement link works without mounting the impression');
+
   for (const width of [1440, 390, 320]) {
     const page = await createPage(width);
     const errors = [];
@@ -82,8 +172,14 @@ try {
     const preview = page.locator('.qofeno-field-guide-frame');
     await preview.scrollIntoViewIfNeeded();
     const frame = await preview.boundingBox();
+    if (width === 1440) {
+      await page.mouse.move(frame.x + frame.width / 2, frame.y + frame.height / 2);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await expect(preview.locator(impressionSelector)).toHaveCount(0);
+    }
     await page.mouse.click(frame.x + frame.width / 2, frame.y + frame.height / 2);
     await expect(page).toHaveURL(/#qofeno-placement$/);
+    await expect(preview.locator(impressionSelector)).toHaveCount(0);
     await expect(page.locator('#qofeno-placement')).toContainText('Active · Owner placement');
     if (width === 1440) {
       await page.locator('.qofeno-header-trigger').click();
