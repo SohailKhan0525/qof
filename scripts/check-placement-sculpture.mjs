@@ -62,7 +62,7 @@ function measure(card) {
 try {
   for (const width of [1440, 390, 320]) {
     const desktop = width === 1440;
-    const { page, errors, requests, card, art } = await createPage(width, desktop ? 'no-preference' : 'reduce');
+    const { page, errors, requests, card, art } = await createPage(width, 'reduce');
     if (desktop) {
       await page.addInitScript(() => {
         window.drawCalls = 0;
@@ -112,9 +112,22 @@ try {
         return await count() === draws;
       }, { timeout: 10000 }).toBe(true);
       const initialDraws = await count();
+      const original = await canvas.screenshot();
       const bounds = await art.boundingBox();
       await page.mouse.move(bounds.x + bounds.width * .8, bounds.y + bounds.height * .4);
       await expect.poll(count).toBeGreaterThan(initialDraws);
+      assert.ok(!(await canvas.screenshot()).equals(original), 'The sculpture should visibly tilt with OS reduce enabled');
+      // Preference changes must not change the pointer behavior or its idle stop.
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      const beforeReverse = await count();
+      await page.mouse.move(bounds.x + bounds.width * .2, bounds.y + bounds.height * .6);
+      await expect.poll(count).toBeGreaterThan(beforeReverse);
+      await expect.poll(async () => {
+        const draws = await count();
+        await page.waitForTimeout(250);
+        return await count() === draws;
+      }, { timeout: 10000 }).toBe(true);
       const contextLossSupported = await canvas.evaluate(node => {
         const extension = node.getContext('webgl2').getExtension('WEBGL_lose_context');
         if (extension) {
@@ -131,7 +144,7 @@ try {
     }
     assert.deepEqual(errors, []);
     await page.context().close();
-    console.log(`PASS ${width}px: lazy same-origin artwork renders without overflow, overlap or a card layout shift`);
+    console.log(`PASS ${width}px with OS reduce: lazy artwork renders without overflow, overlap or a card layout shift${desktop ? '; pointer tilt changes pixels and stops when idle' : ''}`);
   }
 
   for (const mode of ['no WebGL', 'data saver']) {

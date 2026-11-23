@@ -82,7 +82,7 @@ body .reference-hero::after {
   visibility: hidden;
 }
 
-@media (any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference) {
+@media (any-hover: hover) and (any-pointer: fine) {
   .qofeno-field-guide-impression {
     --q-impression-radius: clamp(80px, 13vw, 160px);
     visibility: visible;

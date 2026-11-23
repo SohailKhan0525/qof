@@ -54,7 +54,7 @@ The current homepage opens with a more compact two-column hero and puts the webs
 
 The owner placement renders a small stack of paper plaques with the Qofeno mark in relief. A restrained angle and soft shadows make the layers readable, inspired by the single-object framing on [Apple’s AirTag page](https://www.apple.com/airtag/) and the material closeups on [Vitsœ’s 606 page](https://www.vitsoe.com/us/606). The geometry comes from the existing brand mark and the paper details are drawn locally.
 
-The Three.js bundle loads near the placement. It renders on demand, pauses offscreen, and responds to pointer movement with a small tilt. Reduced motion shows the scene at rest. The original badge fills the same space when WebGL2 is unavailable, the bundle fails to load, or the browser signals Save-Data. The implementation follows Three.js’s [on-demand rendering](https://threejs.org/manual/#en/rendering-on-demand) and [resource cleanup](https://threejs.org/manual/#en/cleanup) guides.
+The Three.js bundle loads near the placement. It renders on demand, pauses offscreen, and responds to pointer movement with a small tilt. The original badge fills the same space when WebGL2 is unavailable, the bundle fails to load, or the browser signals Save-Data. The implementation follows Three.js’s [on-demand rendering](https://threejs.org/manual/#en/rendering-on-demand) and [resource cleanup](https://threejs.org/manual/#en/cleanup) guides.
 
 Run `node scripts/check-placement-sculpture.mjs` to check load timing, pointer response, layout and fallback in Chromium. Set `QOFENO_CHECK_URL` to target a deployed site. The check blocks API writes.
 

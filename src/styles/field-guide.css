@@ -237,16 +237,6 @@ body .reference-closing-orbit > svg {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .qofeno-field-guide-link > span {
-    transition: none;
-  }
-
-  .qofeno-field-guide-link:hover > span {
-    transform: none;
-  }
-}
-
 /* Keep each original frame in the layout while the canvas loads or falls back. */
 .visitor-activity-art,
 .tour-radio-art {

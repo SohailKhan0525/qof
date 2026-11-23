@@ -45,9 +45,9 @@ export function boardClient(source, houseModule, navCapsuleModule) {
     ['Editorial discoveries are separate from paid advertisements and do not imply a partnership with the featured website.', 'Qofeno’s own placement is labeled and excluded from paid ranking.'],
     ['Saved placements and editorial discoveries are stored as IDs', 'Any previously saved placements are stored as IDs'],
     ['30 days per purchase · Your link included', 'Reviewed before publication'],
-    // Share the navbar's existing scroll sampling and React effect lifecycle.
+    // Mount the optional presentation effect with the navbar's React lifecycle.
     ['l=p.current;if(!l)return;let d=()=>{if(e=0,n||document.hidden)return;let d=window.scrollY;',
-      `l=p.current;if(!l)return;let navCapsule;import("./${navCapsuleModule}").then(({createNavCapsule})=>{if(!n)navCapsule=createNavCapsule(l)}).catch(()=>{});let d=()=>{if(e=0,n||document.hidden)return;let d=window.scrollY;navCapsule?.sample(d);`],
+      `l=p.current;if(!l)return;let navCapsule;import("./${navCapsuleModule}").then(({createNavCapsule})=>{if(!n)navCapsule=createNavCapsule(l)}).catch(()=>{});let d=()=>{if(e=0,n||document.hidden)return;let d=window.scrollY;`],
     ['()=>{n=!0,cancelAnimationFrame(e),_.disconnect(),window.removeEventListener(`scroll`,m)',
       '()=>{n=!0,navCapsule?.dispose(),cancelAnimationFrame(e),_.disconnect(),window.removeEventListener(`scroll`,m)'],
   ];

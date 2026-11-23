@@ -145,11 +145,13 @@ async function checkPointerImpression(page) {
 }
 
 try {
-  const desktop = await createPage(1440, { reducedMotion: 'no-preference' });
-  await desktop.goto(origin, { waitUntil: 'domcontentloaded' });
-  await checkPointerImpression(desktop);
-  await desktop.context().close();
-  console.log('PASS desktop impression: localized ink moves with the pointer, clears on leave and preserves the placement link');
+  for (const reducedMotion of ['no-preference', 'reduce']) {
+    const desktop = await createPage(1440, { reducedMotion });
+    await desktop.goto(origin, { waitUntil: 'domcontentloaded' });
+    await checkPointerImpression(desktop);
+    await desktop.context().close();
+    console.log(`PASS desktop impression with OS ${reducedMotion}: localized ink moves with the pointer, clears on leave and preserves the placement link`);
+  }
 
   const touch = await createPage(390, { reducedMotion: 'no-preference', isMobile: true, hasTouch: true });
   await touch.goto(origin, { waitUntil: 'domcontentloaded' });
@@ -162,7 +164,7 @@ try {
   console.log('PASS touch: the placement link works without mounting the impression');
 
   for (const width of [1440, 390, 320]) {
-    const page = await createPage(width);
+    const page = await createPage(width, { isMobile: width < 768, hasTouch: width < 768 });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin, { waitUntil: 'domcontentloaded' });
@@ -171,15 +173,17 @@ try {
     if (width === 1440) await checkDrawing(page);
     const preview = page.locator('.qofeno-field-guide-frame');
     await preview.scrollIntoViewIfNeeded();
+    await expect(page.locator('.reference-hero')).toHaveAttribute('data-qofeno-art-phase', 'settled');
     const frame = await preview.boundingBox();
     if (width === 1440) {
       await page.mouse.move(frame.x + frame.width / 2, frame.y + frame.height / 2);
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-      await expect(preview.locator(impressionSelector)).toHaveCount(0);
+      await expect(preview.locator(impressionSelector)).toHaveCount(1);
+      await expect(preview.locator(impressionSelector)).toHaveCSS('opacity', '1');
     }
     await page.mouse.click(frame.x + frame.width / 2, frame.y + frame.height / 2);
     await expect(page).toHaveURL(/#qofeno-placement$/);
-    await expect(preview.locator(impressionSelector)).toHaveCount(0);
+    await expect(preview.locator(impressionSelector)).toHaveCount(width === 1440 ? 1 : 0);
     await expect(page.locator('#qofeno-placement')).toContainText('Active · Owner placement');
     if (width === 1440) {
       await page.locator('.qofeno-header-trigger').click();
@@ -216,7 +220,7 @@ try {
     }
     assert.deepEqual(errors, []);
     await page.context().close();
-    console.log(`PASS ${width}px: painted scene pixels, placement steps, FAQ, footer, My Spot and checkout`);
+    console.log(`PASS ${width}px with OS reduce: painted scene pixels, placement steps, FAQ, footer, My Spot and checkout`);
   }
 
   const page = await createPage(390);

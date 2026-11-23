@@ -31,7 +31,6 @@ export function mountPlacementSculpture(host) {
   host.append(canvas);
 
   const { scene, camera, pivot, fit } = sculpture;
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let visible = false;
   let lost = false;
   let disposed = false;
@@ -42,7 +41,7 @@ export function mountPlacementSculpture(host) {
   let density = 0;
   let targetX = 0;
   let targetY = 0;
-  if (!reducedMotion.matches) pivot.rotation.set(-.09, -.17, 0);
+  pivot.rotation.set(-.09, -.17, 0);
 
   function stopFrame() {
     cancelAnimationFrame(frame);
@@ -62,8 +61,7 @@ export function mountPlacementSculpture(host) {
     const elapsed = Math.min(time - (previousTime ?? time - 16), 45);
     const interpolation = 1 - Math.exp(-elapsed / 112);
     previousTime = time;
-    const moving = !reducedMotion.matches &&
-      Math.hypot(targetX - pivot.rotation.x, targetY - pivot.rotation.y) > .001;
+    const moving = Math.hypot(targetX - pivot.rotation.x, targetY - pivot.rotation.y) > .001;
     if (moving) {
       pivot.rotation.x += (targetX - pivot.rotation.x) * interpolation;
       pivot.rotation.y += (targetY - pivot.rotation.y) * interpolation;
@@ -100,7 +98,7 @@ export function mountPlacementSculpture(host) {
   }
 
   function tilt(event) {
-    if (reducedMotion.matches || event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') return;
     const bounds = host.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width - .5;
     const y = (event.clientY - bounds.top) / bounds.height - .5;
@@ -145,7 +143,6 @@ export function mountPlacementSculpture(host) {
     stopFrame();
     sizeObserver.disconnect();
     observer.disconnect();
-    reducedMotion.removeEventListener('change', settle);
     document.removeEventListener('visibilitychange', visibilityChange);
     window.removeEventListener('resize', resize);
     host.removeEventListener('pointermove', tilt);
@@ -161,7 +158,6 @@ export function mountPlacementSculpture(host) {
 
   observer.observe(host);
   sizeObserver.observe(host);
-  reducedMotion.addEventListener('change', settle);
   document.addEventListener('visibilitychange', visibilityChange);
   window.addEventListener('resize', resize, { passive: true });
   host.addEventListener('pointermove', tilt, { passive: true });

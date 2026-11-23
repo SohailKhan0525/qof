@@ -174,7 +174,7 @@ function forget(canvas) {
 }
 
 function watchHeroImpression(hero, figure, frame, base) {
-  const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine) and (prefers-reduced-motion: no-preference)');
+  const finePointer = matchMedia('(any-hover: hover) and (any-pointer: fine)');
   if (!globalThis.CSS?.supports('mask-image', 'radial-gradient(black, transparent)')) return;
 
   let impression;

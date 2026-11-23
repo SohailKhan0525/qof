@@ -65,8 +65,18 @@ mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile
 const mountFile = await writeAsset('artwork', 'js', mountSource);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
-const navCapsule = await readFile('src/navigation/velocity-capsule.mjs', 'utf8');
-const navCapsuleFile = await writeAsset('nav-capsule', 'js', navCapsule);
+const navCapsule = await build({
+  entryPoints: ['src/navigation/velocity-capsule.mjs'],
+  bundle: true,
+  write: false,
+  minify: true,
+  platform: 'browser',
+  format: 'esm',
+  target: 'es2022',
+  external: ['./gsap-OWHkPl-m.js'],
+  legalComments: 'eof',
+});
+const navCapsuleFile = await writeAsset('nav-capsule', 'js', navCapsule.outputFiles[0].contents);
 const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
 const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile));
 
