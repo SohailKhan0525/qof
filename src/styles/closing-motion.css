@@ -1,0 +1,97 @@
+body .reference-closing {
+  --q-closing-edge: max(var(--q-gutter), calc((100% - var(--q-page)) / 2 + var(--q-gutter)));
+  isolation: isolate;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  column-gap: clamp(24px, 4.25vw, 68px);
+  width: 100%;
+  max-width: none;
+  padding: clamp(64px, 8vw, 124px) var(--q-closing-edge);
+  overflow: clip;
+  border: 0;
+  background: transparent;
+}
+
+.reference-closing::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #eff3f8, #e3edf7 58%, #dce8f5);
+  border-block: 1px solid #c9d7e5;
+  border-radius: var(--q-closing-radius, 0px);
+  opacity: var(--q-closing-tone, 1);
+  transform: scale(var(--q-closing-scale, 1));
+  pointer-events: none;
+  content: '';
+}
+
+body .reference-closing-copy {
+  min-width: 0;
+}
+
+body .reference-closing .reference-story-kicker {
+  display: inline-block;
+  padding-block: 0 11px;
+  margin: 0 0 clamp(18px, 2vw, 30px);
+  border-bottom: 1px solid #9aadc5;
+  color: var(--q-text);
+  font: 640 clamp(13px, 1.15vw, 16px)/1.35 var(--q-interface);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+body .reference-closing h2 {
+  font-size: clamp(48px, 6.55vw, 100px);
+  letter-spacing: -.065em;
+  line-height: 1.01;
+}
+
+body .reference-closing-actions {
+  align-items: center;
+  gap: 13px 20px;
+  margin-top: clamp(25px, 3vw, 42px);
+}
+
+body .reference-closing-actions .reference-story-action {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 11px 16px;
+  font: 690 15px/1.35 var(--q-interface);
+  text-align: left;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+body .reference-closing-actions p {
+  font: 520 13px/1.5 var(--q-interface);
+}
+
+body .reference-closing-orbit {
+  align-self: center;
+  justify-self: end;
+  width: 100%;
+  max-width: 590px;
+  min-width: 0;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  body .reference-closing {
+    --q-closing-edge: max(var(--q-gutter), 24px);
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+    padding-block: clamp(52px, 10vw, 76px) clamp(28px, 6vw, 50px);
+  }
+
+  body .reference-closing h2 {
+    font-size: clamp(40px, 10.6vw, 70px);
+  }
+
+  body .reference-closing-orbit {
+    justify-self: center;
+    max-width: 400px;
+    margin-top: 4px;
+  }
+}

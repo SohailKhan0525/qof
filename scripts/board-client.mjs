@@ -8,7 +8,7 @@ function replaceOnce(source, search, replacement) {
   return source.slice(0, index) + replacement + source.slice(index + search.length);
 }
 
-export function boardClient(source, houseModule, navCapsuleModule, heroShutterModule) {
+export function boardClient(source, houseModule, trackMarkupModule, navCapsuleModule, heroShutterModule) {
   const start = source.indexOf('function Lt({board:');
   const end = source.indexOf('function Rt({enabled:', start);
   if (start < 0 || end < 0) throw new Error('Recovered board component not found');
@@ -31,6 +31,7 @@ export function boardClient(source, houseModule, navCapsuleModule, heroShutterMo
 
   let client = source.slice(0, start) + board + source.slice(end);
   const edits = [
+    ['(0,P.jsx)(Lt,{board:t,error:n,reload:r,onBuy:e}),', '(0,P.jsx)(Lt,{board:t,error:n,reload:r,onBuy:e}),renderBoardTrack(P),'],
     ['(0,P.jsx)(bn,{enabled:i,onBuy:e}),', ''],
     ['{id:`discover`,title:`Editorial discoveries`,description:`A few good finds, chosen independently.`},', ''],
     ['(0,P.jsx)(`a`,{href:`/#discover`,children:`Editorial discoveries`}),', ''],
@@ -45,6 +46,10 @@ export function boardClient(source, houseModule, navCapsuleModule, heroShutterMo
     ['Editorial discoveries are separate from paid advertisements and do not imply a partnership with the featured website.', 'Qofeno’s own placement is labeled and excluded from paid ranking.'],
     ['Saved placements and editorial discoveries are stored as IDs', 'Any previously saved placements are stored as IDs'],
     ['30 days per purchase · Your link included', 'Reviewed before publication'],
+    ['let n=n=>{if(n.target instanceof Element&&n.target.closest(`a, button, input`))return;n.preventDefault();let r=l.get(e)',
+      'let n=n=>{if(e.closest(`[data-faq-motion]`)||n.target instanceof Element&&n.target.closest(`a, button, input`))return;n.preventDefault();let r=l.get(e)'],
+    ['function wn({enabled:e,onBuy:t}){let n=Cn(e);return(0,P.jsxs)(`section`,{className:`reference-closing`,ref:n,children:',
+      'function wn({enabled:e,onBuy:t}){return(0,P.jsxs)(`section`,{className:`reference-closing`,children:'],
     ['"assets/reference-hero-motion-Dbh5nW8y.js"', `"assets/${heroShutterModule}"`],
     ['import(`./reference-hero-motion-Dbh5nW8y.js`);return{createReferenceHero:e}},__vite__mapDeps([2,1,3])',
       `import("./${heroShutterModule}");return{createReferenceHero:e}},__vite__mapDeps([2,1])`],
@@ -55,5 +60,5 @@ export function boardClient(source, houseModule, navCapsuleModule, heroShutterMo
       '()=>{n=!0,navCapsule?.dispose(),cancelAnimationFrame(e),_.disconnect(),window.removeEventListener(`scroll`,m)'],
   ];
   for (const [search, replacement] of edits) client = replaceOnce(client, search, replacement);
-  return `import { housePlacementElement as renderHousePlacement } from './${houseModule}';\n${client}`;
+  return `import { housePlacementElement as renderHousePlacement } from './${houseModule}';\nimport { boardTrackElement as renderBoardTrack } from './${trackMarkupModule}';\n${client}`;
 }

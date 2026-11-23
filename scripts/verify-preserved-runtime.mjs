@@ -116,7 +116,7 @@ const expected = [
     namespaces: { PUBLIC_READ_LIMITER: '10812011', SENSITIVE_REQUEST_LIMITER: '10812012', VISITOR_RATE_LIMITER: '10812111' },
   },
 ];
-const releaseImports = ['application.mjs', 'board-presentation.mjs', 'house-placement.mjs'];
+const releaseImports = ['application.mjs', 'board-presentation.mjs', 'board-track-markup.mjs', 'house-placement.mjs'];
 for (const contract of expected) {
   await check(`${contract.file} preserves routing, bindings and payment isolation`, async () => {
     // These checked-in .jsonc files intentionally use comment-free JSON.
@@ -128,6 +128,7 @@ for (const contract of expected) {
     assert.deepEqual((await readdir(contract.release)).sort(), [...releaseImports, 'index.mjs'].sort(), 'Unexpected release files.');
     assert.deepEqual(await read(`${contract.release}/application.mjs`), await read(contract.runtime), 'Recovered payment runtime changed during packaging.');
     assert.deepEqual(await read(`${contract.release}/board-presentation.mjs`), await read('server/board-presentation.mjs'));
+    assert.deepEqual(await read(`${contract.release}/board-track-markup.mjs`), await read('src/lib/board-track-markup.mjs'));
     assert.deepEqual(await read(`${contract.release}/house-placement.mjs`), await read('src/lib/house-placement.mjs'));
     assert.ok(config.compatibility_date === '2026-10-01' && JSON.stringify(config.compatibility_flags) === '["nodejs_compat"]', 'Compatibility settings changed.');
     assert.ok(config.workers_dev === contract.dev && config.preview_urls === false, 'Worker URL exposure differs.');

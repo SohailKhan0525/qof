@@ -239,7 +239,7 @@ if (!account || !token) {
     for (const [name, value] of form.entries()) {
       if (typeof value !== 'string' && /\.(?:m?js)$/.test(value.name || name)) modules.set(path.basename(value.name || name), value);
     }
-    const expected = ['application.mjs', 'board-presentation.mjs', 'house-placement.mjs', 'index.mjs'];
+    const expected = ['application.mjs', 'board-presentation.mjs', 'board-track-markup.mjs', 'house-placement.mjs', 'index.mjs'];
     assert.deepEqual([...modules.keys()].sort(), expected, 'Unexpected deployed modules');
     for (const filename of expected) {
       const bytes = Buffer.from(await modules.get(filename).arrayBuffer());

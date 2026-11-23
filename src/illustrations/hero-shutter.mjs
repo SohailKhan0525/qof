@@ -2,6 +2,7 @@ import gsap from './gsap-OWHkPl-m.js';
 import CustomEase from 'gsap/CustomEase.js';
 
 gsap.registerPlugin(CustomEase);
+export { CustomEase };
 const shutterEase = CustomEase.create('qofenoShutter', 'M0,0 C0.38,0 0.16,1 1,1');
 const compact = '(max-width: 730px)';
 

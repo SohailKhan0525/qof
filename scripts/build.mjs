@@ -4,7 +4,11 @@ import { boardClient } from './board-client.mjs';
 import { build } from 'esbuild';
 
 const assetDirectory = 'dist/assets';
-const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board', 'hero-shutter', 'process-story', 'process-stage-art'];
+const stylesheets = [
+  'light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout',
+  'whole-web-board', 'hero-shutter', 'process-story', 'process-stage-art', 'board-track',
+  'faq-motion', 'closing-motion', 'home-section-motion', 'interaction-layout',
+];
 const painters = [
   ['open-web-art', 'painter'],
   ['placement-art', 'placement-art'],
@@ -58,9 +62,11 @@ const adapterFile = await writeAsset('accessibility', 'js', adapter);
 await rm(`${assetDirectory}/qofeno-accessibility.js`);
 
 let mountSource = await readFile('src/illustrations/mount-art.mjs', 'utf8');
+const painterFiles = new Map();
 for (const [source, label] of painters) {
   const artwork = await readFile(`src/illustrations/${source}.mjs`, 'utf8');
   const painterFile = await writeAsset(label, 'js', artwork);
+  painterFiles.set(`./${source}.mjs`, `./${painterFile}`);
   mountSource = mountSource.replace(`./${source}.mjs`, `./${painterFile}`);
 }
 const threeLicense = await readFile('node_modules/three/LICENSE', 'utf8');
@@ -79,6 +85,8 @@ const placementViewFile = await writeAsset('placement-3d', 'js', placementView.o
 mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile}`);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
+const trackMarkup = await readFile('src/lib/board-track-markup.mjs', 'utf8');
+const trackMarkupFile = await writeAsset('board-track-markup', 'js', trackMarkup);
 const [navCapsuleFile, heroShutterFile] = await Promise.all([
   buildMotion('nav-capsule', 'src/navigation/velocity-capsule.mjs'),
   buildMotion('hero-shutter', 'src/illustrations/hero-shutter.mjs'),
@@ -90,9 +98,21 @@ const processStoryFile = await writeAsset('process-story', 'js', processStory
   .replace('../navigation/velocity-capsule.mjs', `./${navCapsuleFile}`)
   .replace('./process-stage-art.mjs', `./${processArtFile}`));
 mountSource = mountSource.replace('./process-story.mjs', `./${processStoryFile}`);
+const motionImports = new Map([
+  ...painterFiles,
+  ['../navigation/velocity-capsule.mjs', `./${navCapsuleFile}`],
+  ['./hero-shutter.mjs', `./${heroShutterFile}`],
+]);
+for (const name of ['board-track', 'faq-motion', 'closing-motion', 'home-section-motion']) {
+  let source = await readFile(`src/illustrations/${name}.mjs`, 'utf8');
+  for (const [original, built] of motionImports) source = source.replaceAll(original, built);
+  const module = await writeAsset(name, 'js', source);
+  mountSource = mountSource.replaceAll(`./${name}.mjs`, `./${module}`);
+}
+mountSource = mountSource.replace('../navigation/velocity-capsule.mjs', `./${navCapsuleFile}`);
 const mountFile = await writeAsset('artwork', 'js', mountSource);
 const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
-const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile, heroShutterFile));
+const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, trackMarkupFile, navCapsuleFile, heroShutterFile));
 
 const assets = await Promise.all([
   script(clientFile, 'type="module"'),
@@ -125,6 +145,7 @@ for (const environment of ['production', 'test']) {
     writeFile(`${directory}/index.mjs`, wrapper),
     writeFile(`${directory}/board-presentation.mjs`, presentation),
     writeFile(`${directory}/house-placement.mjs`, housePlacement),
+    writeFile(`${directory}/board-track-markup.mjs`, trackMarkup),
   ]);
 }
 console.log(`Built the light design, Canvas artwork and optional Three.js scene: ${styleFile}.`);

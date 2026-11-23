@@ -1,0 +1,76 @@
+.qofeno-visitor-press .visitor-activity-metric {
+  position: relative;
+}
+
+.qofeno-visitor-press .visitor-activity-metric::after {
+  position: absolute;
+  inset-inline: clamp(12px, 2vw, 24px);
+  inset-block-start: 0;
+  height: 2px;
+  background-color: var(--q-accent);
+  transform: scaleX(var(--q-ledger-rule, 1));
+  transform-origin: left;
+  pointer-events: none;
+  content: '';
+}
+
+.qofeno-proof-sheet {
+  position: relative;
+  isolation: isolate;
+  --q-proof-open: 1;
+}
+
+.qofeno-proof-sheet::before {
+  position: absolute;
+  inset: 8px 0;
+  z-index: -1;
+  clip-path: inset(0 calc((1 - var(--q-proof-open)) * 50%) round 12px);
+  background: #e0e9f4;
+  content: '';
+}
+
+.footer-stage .footer-wordmark-ink {
+  clip-path: inset(0 0 var(--q-footer-open, 0%) 0);
+}
+
+.footer-stage .footer-logo:focus-visible .footer-wordmark-ink {
+  clip-path: none;
+}
+
+.footer-stage .footer-wordmark-frame {
+  position: relative;
+}
+
+.footer-stage .footer-wordmark-frame::after {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 1px;
+  background: var(--q-accent);
+  transform: scaleX(var(--q-footer-rule, 0));
+  transform-origin: left;
+  pointer-events: none;
+  content: '';
+}
+
+body .qofeno-action-foil {
+  --q-action-ink: 0;
+  position: relative;
+  isolation: isolate;
+}
+
+body .qofeno-action-foil::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 14%);
+  clip-path: inset(0 calc((1 - var(--q-action-ink)) * 100%) 0 0);
+  pointer-events: none;
+  content: '';
+}
+
+body .qofeno-action-foil:is(:hover, :focus-visible) > svg {
+  transform: translate(calc(var(--q-action-ink) * 4px), calc(var(--q-action-ink) * -3px));
+  transition: none;
+}

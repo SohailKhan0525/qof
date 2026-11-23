@@ -45,6 +45,7 @@ function mountPinnedStage(grid, cards, stacked) {
   let activeCard;
   let chapterPositions = [];
   let refreshFrame = 0;
+  let focusFrame = 0;
 
   function distance() {
     return Math.max(1, grid.clientHeight - track.clientHeight);
@@ -98,14 +99,23 @@ function mountPinnedStage(grid, cards, stacked) {
     return (document.querySelector('.qofeno-header')?.offsetHeight ?? 92) + (stacked ? 8 : 24);
   }
 
-  function revealFocusedControl(event) {
-    if (!stacked || !trigger?.isActive || !event.target.matches('a, button, input, select, textarea')) return;
-    const obscured = stage.getBoundingClientRect().bottom + 12 - event.target.getBoundingClientRect().top;
-    if (obscured > 0) window.scrollBy({ top: -obscured, behavior: 'instant' });
+  function revealFocusedControl() {
+    const control = document.activeElement;
+    if (!stacked || !control?.matches('a, button, input, select, textarea') || !grid.contains(control)) return;
+    cancelAnimationFrame(focusFrame);
+    focusFrame = requestAnimationFrame(() => {
+      if (document.activeElement !== control) return;
+      const { top, bottom } = control.getBoundingClientRect();
+      const readingTop = (trigger?.isActive ? stage.getBoundingClientRect().bottom : topOffset()) + 12;
+      const readingBottom = window.innerHeight - 12;
+      const offset = top < readingTop ? top - readingTop : Math.max(0, bottom - readingBottom);
+      if (offset) window.scrollBy({ top: offset, behavior: 'instant' });
+    });
   }
 
   function dispose() {
     cancelAnimationFrame(refreshFrame);
+    cancelAnimationFrame(focusFrame);
     resize?.disconnect();
     grid.removeEventListener('focusin', revealFocusedControl);
     trigger?.kill();
@@ -136,6 +146,7 @@ function mountPinnedStage(grid, cards, stacked) {
         playhead.position = self.progress;
         measure();
         render();
+        revealFocusedControl();
       },
     });
     resize = new ResizeObserver(() => {

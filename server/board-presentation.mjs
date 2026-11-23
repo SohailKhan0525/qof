@@ -1,4 +1,5 @@
 import { HOUSE_PLACEMENT, housePlacementMarkup } from './house-placement.mjs';
+import { boardTrackMarkup } from './board-track-markup.mjs';
 
 const homeDescription = 'Explore the Qofeno website placement board. One-time paid placements start at US$10 for 30 days, with human review before publication.';
 const missingDescription = 'That page does not exist. Visit the Qofeno board or contact support@loopproof.me.';
@@ -124,6 +125,9 @@ function presentPage(response, pathname) {
       .on('#questions .faq-list > details:nth-child(5)', removeElement)
       .on('#board > .canvas-panel', {
         element: element => element.before(housePlacementMarkup(), { html: true }),
+      })
+      .on('main > #board', {
+        element: element => element.after(boardTrackMarkup(), { html: true }),
       })
       .on('script[type="application/ld+json"]', rewriteText(filterStructuredData));
   }

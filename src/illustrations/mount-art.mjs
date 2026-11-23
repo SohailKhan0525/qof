@@ -5,8 +5,16 @@ import { drawUtilityArt } from './utility-art.mjs';
 const root = document.getElementById('root');
 const sceneSelector = '[data-interface-illustration] > svg, .visitor-activity-art > svg';
 const sculptureSelector = '.house-placement-art';
-const processSelector = '#how-it-works .placement-process-grid';
-const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}, ${sculptureSelector}, ${processSelector}`;
+const sectionMotion = [
+  ['#board-stories', () => import('./board-track.mjs').then(module => module.mountBoardTrack)],
+  ['#how-it-works .placement-process-grid', () => import('./process-story.mjs').then(module => module.mountProcessStory)],
+  ['.questions-section .faq-list', () => import('./faq-motion.mjs').then(module => module.mountFaqMotion)],
+  ['.reference-closing', () => import('./closing-motion.mjs').then(module => module.mountClosingMotion)],
+  ['.visitor-activity', () => import('./home-section-motion.mjs').then(module => module.mountVisitorMotion)],
+  ['.honest-section', () => import('./home-section-motion.mjs').then(module => module.mountTrustMotion)],
+  ['.footer-stage', () => import('./home-section-motion.mjs').then(module => module.mountFooterMotion)],
+];
+const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}, ${sculptureSelector}, ${sectionMotion.map(([selector]) => selector).join(', ')}`;
 const placementKinds = { submit: 'submit', review: 'review', ranking: 'ranking', expiry: 'expiry', receipt: 'ticket' };
 const utilityKinds = { discover: 'discover', contact: 'message', privacy: 'recovery' };
 const canvases = new Map();
@@ -16,8 +24,8 @@ const frameInterval = 1000 / 30;
 let animationFrame = 0;
 let sculptureHost;
 let stopSculpture;
-let processHost;
-let stopProcess;
+const sectionStates = new Map();
+let refreshFrame;
 
 function watchSculpture(host) {
   if (navigator.connection?.saveData || typeof WebGL2RenderingContext === 'undefined' ||
@@ -42,25 +50,46 @@ function watchSculpture(host) {
   };
 }
 
-function watchProcessStory(grid) {
+function refreshScrollMotion() {
+  cancelAnimationFrame(refreshFrame);
+  refreshFrame = requestAnimationFrame(() => {
+    import('../navigation/velocity-capsule.mjs').then(({ ScrollTrigger }) => ScrollTrigger.refresh()).catch(() => {});
+  });
+}
+
+function watchSectionMotion(host, load) {
   if (typeof IntersectionObserver === 'undefined') return;
   let active = true;
+  let started = false;
   let dispose;
-  const observer = new IntersectionObserver(async ([entry]) => {
-    if (!entry.isIntersecting) return;
+  async function start() {
+    if (started) return;
+    started = true;
     observer.disconnect();
+    host.removeEventListener('focusin', start);
     try {
-      const { mountProcessStory } = await import('./process-story.mjs');
-      if (active && grid.isConnected) dispose = mountProcessStory(grid);
+      const mount = await load();
+      if (!active || !host.isConnected) return;
+      dispose = mount(host);
+      refreshScrollMotion();
     } catch (error) {
-      console.warn('Qofeno is using the inline placement steps.', error);
+      console.warn('Qofeno is using the standard section layout.', error);
     }
+  }
+  const observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) start();
   }, { rootMargin: '520px 0px' });
-  observer.observe(grid);
+  host.addEventListener('focusin', start);
+  observer.observe(host);
+  if (host.contains(document.activeElement)) start();
   return () => {
     active = false;
     observer.disconnect();
-    dispose?.();
+    host.removeEventListener('focusin', start);
+    if (dispose) {
+      dispose();
+      refreshScrollMotion();
+    }
   };
 }
 
@@ -305,11 +334,13 @@ function refreshArt() {
     sculptureHost = nextSculpture;
     stopSculpture = nextSculpture ? watchSculpture(nextSculpture) : null;
   }
-  const nextProcess = root.querySelector(processSelector);
-  if (nextProcess !== processHost) {
-    stopProcess?.();
-    processHost = nextProcess;
-    stopProcess = nextProcess ? watchProcessStory(nextProcess) : null;
+  for (const [selector, load] of sectionMotion) {
+    const host = root.querySelector(selector);
+    const previous = sectionStates.get(selector);
+    if (previous?.host === host) continue;
+    previous?.dispose?.();
+    if (host) sectionStates.set(selector, { host, dispose: watchSectionMotion(host, load) });
+    else sectionStates.delete(selector);
   }
 
   for (const [canvas, entry] of canvases) {
@@ -355,4 +386,5 @@ if (root && resize) {
     for (const canvas of canvases.keys()) syncMotion(canvas);
   });
   refreshArt();
+  import('./home-section-motion.mjs').then(({ mountActionMotion }) => mountActionMotion(root)).catch(() => {});
 }

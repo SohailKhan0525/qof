@@ -1,0 +1,66 @@
+body .faq-list[data-faq-motion] {
+  position: relative;
+  isolation: isolate;
+  overflow-anchor: none;
+}
+
+body .faq-list[data-faq-motion] > details {
+  --q-faq-chrome: 1;
+  position: relative;
+  border-bottom-color: transparent;
+  transform-origin: 0 0;
+}
+
+body .faq-list[data-faq-motion] > details::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  background: var(--q-line);
+  opacity: var(--q-faq-chrome);
+  pointer-events: none;
+}
+
+body .faq-list[data-faq-motion] summary {
+  color: var(--q-ink);
+  min-height: 56px;
+}
+
+body .faq-list[data-faq-motion] summary svg {
+  color: var(--q-accent);
+  opacity: var(--q-faq-chrome);
+}
+
+body .faq-list[data-faq-motion] summary:focus-visible {
+  outline: 2px solid var(--q-accent);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+body .faq-list[data-faq-motion] details > p {
+  color: var(--q-text);
+}
+
+/* The recovered native accordion remains the fallback until this module mounts. */
+body .faq-list[data-faq-motion] details[open] > p,
+body .faq-list[data-faq-motion] details[open] summary .minus {
+  animation: none !important;
+}
+
+body .faq-list[data-faq-motion] details[data-fold-state] summary .minus {
+  transition: none;
+  transform: none;
+}
+
+body .faq-list[data-faq-motion] .qofeno-faq-exit {
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+@media (forced-colors: active) {
+  body .faq-list[data-faq-motion] details::after,
+  body .faq-list[data-faq-motion] summary svg {
+    opacity: 1;
+  }
+}

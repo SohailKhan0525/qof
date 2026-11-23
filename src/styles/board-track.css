@@ -1,0 +1,222 @@
+/* The live board stays intact; these three chapters explain its placement rules. */
+body .qofeno-board-track {
+  position: relative;
+  width: 100%;
+  padding-block: var(--q-section-gap);
+  border-block: 1px solid var(--q-line);
+  background: #f0eee6;
+  scroll-margin-top: 106px;
+}
+.qofeno-board-track-stage { width: 100%; }
+.qofeno-board-track-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px 48px;
+  padding-inline: var(--q-edge);
+  margin-bottom: 32px;
+}
+.qofeno-board-track-heading .qofeno-board-track-label {
+  margin: 0 0 12px;
+  color: var(--q-text);
+  font: 550 14px/1.35 var(--q-interface);
+}
+body .qofeno-board-track-heading h2 {
+  margin: 0;
+  font: 500 clamp(30px, 3.75vw, 54px)/1.06 var(--q-display);
+  letter-spacing: -.048em;
+}
+.qofeno-board-track-heading > p {
+  max-width: 30ch;
+  margin: 0 0 2px;
+  color: var(--q-text);
+  font: 400 16px/1.55 var(--q-interface);
+}
+.qofeno-board-track-window { overflow: hidden; overflow: clip; }
+.qofeno-board-track-rail {
+  display: grid;
+  gap: 32px;
+  padding-inline: var(--q-edge);
+}
+.qofeno-board-track-card {
+  min-width: 0;
+  scroll-margin-top: 106px;
+}
+.qofeno-board-track-card-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  min-height: 410px;
+  background: #fffdf7;
+  transform-origin: 50% 50%;
+}
+.qofeno-board-track-art {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  overflow: clip;
+  background: #dce8e3;
+  isolation: isolate;
+}
+.q-board-art-rank { background: #dce7f5; }
+.q-board-art-terms { background: #efd8bd; }
+.qofeno-board-track-art-inner {
+  position: absolute;
+  inset: -5% -8%;
+}
+.qofeno-board-track-art-inner > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.qofeno-board-track-art-number {
+  position: absolute;
+  top: 19px;
+  left: 22px;
+  color: #34554e;
+  font: 500 12px/1 var(--q-interface);
+  font-variant-numeric: tabular-nums;
+}
+.q-board-art-rank .qofeno-board-track-art-number { color: #24436c; }
+.q-board-art-terms .qofeno-board-track-art-number { color: #664738; }
+.qofeno-board-track-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  min-width: 0;
+  padding: clamp(28px, 3.5vw, 48px);
+}
+.qofeno-board-track-copy .qofeno-board-track-kicker {
+  margin: 0 0 16px;
+  color: var(--q-text);
+  font: 550 13px/1.4 var(--q-interface);
+}
+body .qofeno-board-track-copy h3 {
+  max-width: 15ch;
+  margin: 0 0 22px;
+  color: var(--q-ink);
+  font: 530 clamp(28px, 3vw, 42px)/1.08 var(--q-display);
+  letter-spacing: -.043em;
+  text-wrap: balance;
+}
+.qofeno-board-track-copy .qofeno-board-track-body {
+  max-width: 37ch;
+  margin: 0;
+  color: var(--q-text);
+  font: 400 16px/1.55 var(--q-interface);
+}
+.qofeno-board-track-copy .qofeno-board-track-note {
+  max-width: 40ch;
+  margin: 16px 0 20px;
+  color: var(--q-muted);
+  font: 400 13px/1.5 var(--q-interface);
+}
+.qofeno-board-track-copy > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: auto;
+  padding-block: 6px;
+  color: var(--q-accent);
+  font: 600 14px/1.35 var(--q-interface);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .2s;
+}
+.qofeno-board-track-copy > a:hover { text-decoration-color: currentColor; }
+.qofeno-board-track-copy > a > svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  transition: transform .2s;
+}
+.qofeno-board-track-copy > a:hover > svg { transform: translateX(3px); }
+.qofeno-board-track-nav { display: none; }
+
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-heading {
+  margin-bottom: 26px;
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-rail {
+  display: flex;
+  width: max-content;
+  gap: 28px;
+  will-change: transform;
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-card {
+  flex: 0 0 min(1120px, calc(100vw - var(--q-edge) * 2));
+  width: min(1120px, calc(100vw - var(--q-edge) * 2));
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-card-inner {
+  height: clamp(370px, 47vh, 450px);
+  min-height: 0;
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-copy {
+  padding: clamp(24px, 2.8vw, 40px);
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-copy h3 {
+  margin-bottom: 16px;
+  font-size: clamp(29px, 2.6vw, 38px);
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-copy .qofeno-board-track-note {
+  margin: 13px 0 10px;
+}
+.qofeno-board-track[data-track-layout="horizontal"] .qofeno-board-track-nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 16px var(--q-edge) 0;
+}
+.qofeno-board-track-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--q-text);
+  font: 500 13px/1.4 var(--q-interface);
+  text-align: left;
+  cursor: pointer;
+}
+.qofeno-board-track-nav button > span { font-variant-numeric: tabular-nums; opacity: .7; }
+.qofeno-board-track-nav button:is(:hover, [aria-current="step"]) {
+  color: var(--q-accent);
+  border-bottom-color: currentColor;
+}
+.qofeno-board-track-scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  color: var(--q-muted);
+  font: 400 12px/1.4 var(--q-interface);
+}
+.qofeno-board-track-scroll-hint > svg { width: 22px; height: 22px; }
+
+@media (max-width: 999px) {
+  .qofeno-board-track-heading { align-items: start; }
+  .qofeno-board-track-heading > p { max-width: 25ch; }
+  .qofeno-board-track-card-inner { min-height: 390px; grid-template-columns: 1.05fr 1fr; }
+  .qofeno-board-track-copy { padding: 26px; }
+  .qofeno-board-track-copy .qofeno-board-track-body { font-size: 15px; }
+  body .qofeno-board-track-copy h3 { font-size: 30px; }
+}
+@media (max-width: 680px) {
+  .qofeno-board-track-heading { display: block; margin-bottom: 28px; }
+  .qofeno-board-track-heading > p { max-width: 32ch; margin-top: 18px; font-size: 15px; }
+  .qofeno-board-track-rail { gap: 28px; }
+  .qofeno-board-track-card-inner { display: block; }
+  .qofeno-board-track-art { aspect-ratio: 1.23; }
+  .qofeno-board-track-copy { padding: 27px 25px 22px; }
+  .qofeno-board-track-copy .qofeno-board-track-kicker { margin-bottom: 12px; }
+  body .qofeno-board-track-copy h3 { max-width: 17ch; margin-bottom: 18px; font-size: clamp(28px, 7.7vw, 36px); }
+  .qofeno-board-track-copy .qofeno-board-track-body { max-width: 38ch; font-size: 16px; }
+  .qofeno-board-track-copy .qofeno-board-track-note { margin-bottom: 14px; }
+}

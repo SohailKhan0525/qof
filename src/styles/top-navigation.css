@@ -16,6 +16,10 @@ body .qofeno-header .qofeno-header-inner {
   transform: none;
 }
 
+body .qofeno-header:not([data-open="true"], [data-mobile-dialog="true"]) {
+  overflow-x: clip;
+}
+
 body .qofeno-header :is(.qofeno-header-brand, .qofeno-header-actions) {
   transform: none;
 }
@@ -174,6 +178,17 @@ body .qofeno-header :focus-visible {
 }
 
 @media (max-width: 1239px) {
+  /* A fixed 100% menu can retain an expanded mobile layout viewport after
+     scrolling. Use the same measured viewport width as the header surface. */
+  body .qofeno-header .qofeno-navigation-panel.qofeno-mobile-navigation {
+    width: var(--q-nav-viewport, 100vw);
+    max-width: var(--q-nav-viewport, 100vw);
+  }
+
+  body .qofeno-header .qofeno-mobile-navigation[data-open="false"]:not([data-mobile-phase="closing"]) {
+    display: none;
+  }
+
   body .qofeno-header {
     --q-nav-row: 60px;
     --q-nav-top: 8px;

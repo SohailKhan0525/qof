@@ -1,0 +1,77 @@
+body :is(.reference-hero-actions, .rank-empty, .honest-section, .reference-closing-actions) :is(.button, .reference-story-action),
+body .checkout-preview .button {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body :is(.button, .text-link, .reference-story-action) > svg {
+  flex: 0 0 auto;
+}
+
+body .dialog .dialog-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+body .dialog .quantity button {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+body :is(.dialog, .legal-section) a:is([href='/advertising-policy'], [href='/privacy'], [href='/refunds'], [href='/terms']) {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  body .dialog .dialog-close {
+    display: flex;
+    position: sticky;
+    inset: 0 auto auto;
+    margin-inline-start: auto;
+    margin-block-end: -44px;
+  }
+
+  body .dialog .checkout-interface-art {
+    max-width: 156px;
+    margin: 0 auto 4px;
+  }
+
+  body .dialog .checkout-preview {
+    padding: 12px;
+    gap: 8px;
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  body .dialog .checkout-form {
+    grid-row: 1;
+  }
+
+  body .dialog .flat-checkout-preview .flat-listing-preview {
+    padding: 40px 14px 13px;
+  }
+
+  body .dialog .amount-field {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  body .placement-process-bottom {
+    flex-wrap: wrap;
+    column-gap: 12px;
+    row-gap: 4px;
+  }
+
+  body .placement-process-bottom .text-link {
+    min-height: 44px;
+    white-space: nowrap;
+  }
+}
