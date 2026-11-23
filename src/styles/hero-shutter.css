@@ -1,0 +1,59 @@
+body .reference-hero {
+  position: relative;
+  isolation: isolate;
+  max-width: none;
+  padding-inline: max(var(--q-gutter), calc((100% - var(--q-page)) / 2 + var(--q-gutter)));
+}
+
+.qofeno-hero-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.qofeno-hero-background-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 67% center;
+  transform-origin: 72% 52%;
+}
+
+.qofeno-hero-background::after {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgb(250 249 245 / 78%), transparent 17%),
+    linear-gradient(90deg, rgb(250 249 245 / 91%), rgb(250 249 245 / 80%) 34%, transparent 72%);
+  content: '';
+}
+
+body .reference-hero[data-hero-shutter] .qofeno-field-guide-frame {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+[data-hero-shutter="playing"] .qofeno-hero-background {
+  will-change: clip-path;
+}
+
+[data-hero-shutter="playing"] .qofeno-hero-background-image {
+  will-change: transform, filter;
+}
+
+@media (max-width: 730px) {
+  .qofeno-hero-background-image {
+    transform-origin: 55% 71%;
+  }
+
+  .qofeno-hero-background::after {
+    background:
+      linear-gradient(0deg, rgb(250 249 245 / 82%), transparent 19%),
+      linear-gradient(180deg, rgb(250 249 245 / 98%), rgb(250 249 245 / 91%) 32%,
+        rgb(250 249 245 / 28%) 58%, rgb(250 249 245 / 12%));
+  }
+}

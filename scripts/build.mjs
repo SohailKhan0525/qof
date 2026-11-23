@@ -4,7 +4,7 @@ import { boardClient } from './board-client.mjs';
 import { build } from 'esbuild';
 
 const assetDirectory = 'dist/assets';
-const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board'];
+const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board', 'hero-shutter'];
 const painters = [
   ['open-web-art', 'painter'],
   ['placement-art', 'placement-art'],
@@ -29,6 +29,21 @@ async function script(file, mode) {
 
 async function stylesheet(file) {
   return `<link rel="stylesheet" href="/assets/${file}" integrity="${await integrity(file)}" crossorigin="anonymous"/>`;
+}
+
+async function buildMotion(label, entryPoint) {
+  const motion = await build({
+    entryPoints: [entryPoint],
+    bundle: true,
+    write: false,
+    minify: true,
+    platform: 'browser',
+    format: 'esm',
+    target: 'es2022',
+    external: ['./gsap-OWHkPl-m.js'],
+    legalComments: 'eof',
+  });
+  return writeAsset(label, 'js', motion.outputFiles[0].contents);
 }
 
 await rm('dist', { recursive: true, force: true });
@@ -65,20 +80,12 @@ mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile
 const mountFile = await writeAsset('artwork', 'js', mountSource);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
-const navCapsule = await build({
-  entryPoints: ['src/navigation/velocity-capsule.mjs'],
-  bundle: true,
-  write: false,
-  minify: true,
-  platform: 'browser',
-  format: 'esm',
-  target: 'es2022',
-  external: ['./gsap-OWHkPl-m.js'],
-  legalComments: 'eof',
-});
-const navCapsuleFile = await writeAsset('nav-capsule', 'js', navCapsule.outputFiles[0].contents);
+const [navCapsuleFile, heroShutterFile] = await Promise.all([
+  buildMotion('nav-capsule', 'src/navigation/velocity-capsule.mjs'),
+  buildMotion('hero-shutter', 'src/illustrations/hero-shutter.mjs'),
+]);
 const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
-const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile));
+const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile, heroShutterFile));
 
 const assets = await Promise.all([
   script(clientFile, 'type="module"'),
