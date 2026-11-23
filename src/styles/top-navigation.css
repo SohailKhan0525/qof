@@ -27,6 +27,16 @@ body .qofeno-header .qofeno-header-shell {
   background: var(--q-paper);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  body .qofeno-header:not([data-open="true"], [data-mobile-dialog="true"], :has(:focus-visible)) .qofeno-header-shell {
+    border-radius: calc(10px + var(--q-nav-morph, 0) * var(--q-nav-rounding, 24px));
+    transform: scale(
+      calc(1 - var(--q-nav-morph, 0) * var(--q-nav-squeeze-x, .010)),
+      calc(1 - var(--q-nav-morph, 0) * var(--q-nav-squeeze-y, .042))
+    );
+  }
+}
+
 body .qofeno-header[data-scrolled="true"] .qofeno-header-shell {
   background: rgb(250 249 245 / 94%);
   border-color: #cbd4db;
@@ -153,6 +163,9 @@ body .qofeno-header :focus-visible {
     --q-nav-gutter: clamp(12px, 3.5vw, 36px);
     --q-nav-inner: 11px;
     --q-nav-menu-edge: clamp(24px, 5vw, 76px);
+    --q-nav-rounding: 18px;
+    --q-nav-squeeze-x: .006;
+    --q-nav-squeeze-y: .026;
   }
 
   body .qofeno-header .qofeno-header-navigation {

@@ -65,8 +65,10 @@ mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile
 const mountFile = await writeAsset('artwork', 'js', mountSource);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
+const navCapsule = await readFile('src/navigation/velocity-capsule.mjs', 'utf8');
+const navCapsuleFile = await writeAsset('nav-capsule', 'js', navCapsule);
 const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
-const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile));
+const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile));
 
 const assets = await Promise.all([
   script(clientFile, 'type="module"'),

@@ -8,7 +8,7 @@ function replaceOnce(source, search, replacement) {
   return source.slice(0, index) + replacement + source.slice(index + search.length);
 }
 
-export function boardClient(source, houseModule) {
+export function boardClient(source, houseModule, navCapsuleModule) {
   const start = source.indexOf('function Lt({board:');
   const end = source.indexOf('function Rt({enabled:', start);
   if (start < 0 || end < 0) throw new Error('Recovered board component not found');
@@ -45,6 +45,11 @@ export function boardClient(source, houseModule) {
     ['Editorial discoveries are separate from paid advertisements and do not imply a partnership with the featured website.', 'Qofeno’s own placement is labeled and excluded from paid ranking.'],
     ['Saved placements and editorial discoveries are stored as IDs', 'Any previously saved placements are stored as IDs'],
     ['30 days per purchase · Your link included', 'Reviewed before publication'],
+    // Share the navbar's existing scroll sampling and React effect lifecycle.
+    ['l=p.current;if(!l)return;let d=()=>{if(e=0,n||document.hidden)return;let d=window.scrollY;',
+      `l=p.current;if(!l)return;let navCapsule;import("./${navCapsuleModule}").then(({createNavCapsule})=>{if(!n)navCapsule=createNavCapsule(l)}).catch(()=>{});let d=()=>{if(e=0,n||document.hidden)return;let d=window.scrollY;navCapsule?.sample(d);`],
+    ['()=>{n=!0,cancelAnimationFrame(e),_.disconnect(),window.removeEventListener(`scroll`,m)',
+      '()=>{n=!0,navCapsule?.dispose(),cancelAnimationFrame(e),_.disconnect(),window.removeEventListener(`scroll`,m)'],
   ];
   for (const [search, replacement] of edits) client = replaceOnce(client, search, replacement);
   return `import { housePlacementElement as renderHousePlacement } from './${houseModule}';\n${client}`;
