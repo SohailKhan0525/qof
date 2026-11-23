@@ -3,6 +3,7 @@ import Flip from 'gsap/Flip.js';
 import ScrollTrigger from 'gsap/ScrollTrigger.js';
 
 gsap.registerPlugin(ScrollTrigger, Flip);
+export { gsap, ScrollTrigger, Flip };
 
 const minimumDetachSpeed = 180;
 const minimumDetachPosition = 48;

@@ -28,6 +28,8 @@ async function createPage(width, options = {}) {
     const body = fixtures.get(new URL(route.request().url()).pathname);
     return body && !isRemote ? route.fulfill({ contentType: 'application/json', body }) : route.continue();
   });
+  // The Canvas suite exercises the ordinary inline process artwork on all widths.
+  await context.route('**/assets/qofeno-process-story-*.js', route => route.abort());
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
   return page;

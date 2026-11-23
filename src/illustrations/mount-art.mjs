@@ -5,7 +5,8 @@ import { drawUtilityArt } from './utility-art.mjs';
 const root = document.getElementById('root');
 const sceneSelector = '[data-interface-illustration] > svg, .visitor-activity-art > svg';
 const sculptureSelector = '.house-placement-art';
-const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}, ${sculptureSelector}`;
+const processSelector = '#how-it-works .placement-process-grid';
+const targetSelector = `.reference-hero, .reference-closing-orbit, ${sceneSelector}, ${sculptureSelector}, ${processSelector}`;
 const placementKinds = { submit: 'submit', review: 'review', ranking: 'ranking', expiry: 'expiry', receipt: 'ticket' };
 const utilityKinds = { discover: 'discover', contact: 'message', privacy: 'recovery' };
 const canvases = new Map();
@@ -15,6 +16,8 @@ const frameInterval = 1000 / 30;
 let animationFrame = 0;
 let sculptureHost;
 let stopSculpture;
+let processHost;
+let stopProcess;
 
 function watchSculpture(host) {
   if (navigator.connection?.saveData || typeof WebGL2RenderingContext === 'undefined' ||
@@ -32,6 +35,28 @@ function watchSculpture(host) {
     }
   }, { rootMargin: '100px 0px' });
   observer.observe(host);
+  return () => {
+    active = false;
+    observer.disconnect();
+    dispose?.();
+  };
+}
+
+function watchProcessStory(grid) {
+  if (typeof IntersectionObserver === 'undefined') return;
+  let active = true;
+  let dispose;
+  const observer = new IntersectionObserver(async ([entry]) => {
+    if (!entry.isIntersecting) return;
+    observer.disconnect();
+    try {
+      const { mountProcessStory } = await import('./process-story.mjs');
+      if (active && grid.isConnected) dispose = mountProcessStory(grid);
+    } catch (error) {
+      console.warn('Qofeno is using the inline placement steps.', error);
+    }
+  }, { rootMargin: '520px 0px' });
+  observer.observe(grid);
   return () => {
     active = false;
     observer.disconnect();
@@ -279,6 +304,12 @@ function refreshArt() {
     stopSculpture?.();
     sculptureHost = nextSculpture;
     stopSculpture = nextSculpture ? watchSculpture(nextSculpture) : null;
+  }
+  const nextProcess = root.querySelector(processSelector);
+  if (nextProcess !== processHost) {
+    stopProcess?.();
+    processHost = nextProcess;
+    stopProcess = nextProcess ? watchProcessStory(nextProcess) : null;
   }
 
   for (const [canvas, entry] of canvases) {

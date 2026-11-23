@@ -4,7 +4,7 @@ import { boardClient } from './board-client.mjs';
 import { build } from 'esbuild';
 
 const assetDirectory = 'dist/assets';
-const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board', 'hero-shutter'];
+const stylesheets = ['light-foundation', 'light-functional', 'field-guide', 'top-navigation', 'type-and-layout', 'whole-web-board', 'hero-shutter', 'process-story', 'process-stage-art'];
 const painters = [
   ['open-web-art', 'painter'],
   ['placement-art', 'placement-art'],
@@ -77,13 +77,20 @@ const placementView = await build({
 });
 const placementViewFile = await writeAsset('placement-3d', 'js', placementView.outputFiles[0].contents);
 mountSource = mountSource.replace('./placement-view.mjs', `./${placementViewFile}`);
-const mountFile = await writeAsset('artwork', 'js', mountSource);
 const housePlacement = await readFile('src/lib/house-placement.mjs', 'utf8');
 const houseFile = await writeAsset('house-placement', 'js', housePlacement);
 const [navCapsuleFile, heroShutterFile] = await Promise.all([
   buildMotion('nav-capsule', 'src/navigation/velocity-capsule.mjs'),
   buildMotion('hero-shutter', 'src/illustrations/hero-shutter.mjs'),
 ]);
+const processArt = await readFile('src/illustrations/process-stage-art.mjs', 'utf8');
+const processArtFile = await writeAsset('process-stage-art', 'js', processArt);
+const processStory = await readFile('src/illustrations/process-story.mjs', 'utf8');
+const processStoryFile = await writeAsset('process-story', 'js', processStory
+  .replace('../navigation/velocity-capsule.mjs', `./${navCapsuleFile}`)
+  .replace('./process-stage-art.mjs', `./${processArtFile}`));
+mountSource = mountSource.replace('./process-story.mjs', `./${processStoryFile}`);
+const mountFile = await writeAsset('artwork', 'js', mountSource);
 const recoveredClient = await readFile('public/assets/index-SEI-Pf69.js', 'utf8');
 const clientFile = await writeAsset('board-client', 'js', boardClient(recoveredClient, houseFile, navCapsuleFile, heroShutterFile));
 

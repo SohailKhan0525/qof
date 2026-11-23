@@ -1,0 +1,66 @@
+@media (min-width: 1000px) and (min-height: 620px) {
+  body .placement-process-grid.qofeno-process-active {
+    --q-process-stage-height: clamp(355px, 55svh, 492px);
+    --q-process-step-height: clamp(322px, 53svh, 475px);
+    position: relative;
+    grid-template: repeat(4, auto) / minmax(0, .86fr) minmax(0, 1.14fr);
+    align-items: start;
+    column-gap: clamp(32px, 5.6vw, 86px);
+    row-gap: 0;
+  }
+
+  .qofeno-process-track {
+    grid-area: 1 / 2 / 5 / 3;
+    align-self: start;
+    width: 100%;
+    height: var(--q-process-stage-height);
+    min-width: 0;
+  }
+
+  body .qofeno-process-active > .placement-process-card {
+    grid-column: 1;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    min-height: var(--q-process-step-height);
+    padding: 32px 0;
+    overflow: visible;
+    border: 0;
+    border-top: 1px solid var(--q-line);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  body .qofeno-process-active > .qofeno-process-current {
+    border-top-color: var(--q-accent);
+  }
+
+  body .qofeno-process-active > .placement-process-card .interface-illustration {
+    display: none;
+  }
+
+  body .qofeno-process-active :is(.placement-process-copy, .placement-process-topline, .placement-process-bottom) {
+    width: 100%;
+    max-width: 440px;
+    margin: 0;
+    padding: 0;
+  }
+
+  body .qofeno-process-active .placement-process-copy h3 {
+    font: 520 clamp(32px, 3.6vw, 54px)/1.05 var(--q-display);
+    letter-spacing: -.045em;
+  }
+
+  body .qofeno-process-active .placement-process-copy p {
+    max-width: 39ch;
+    font-size: clamp(16px, 1.4vw, 18px);
+  }
+
+  body .qofeno-process-active .qofeno-process-current .placement-process-number {
+    color: var(--q-accent);
+  }
+}
