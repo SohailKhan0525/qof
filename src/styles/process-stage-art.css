@@ -102,6 +102,7 @@
   top: var(--item-y);
   width: var(--item-w);
   height: var(--item-h);
+  border-radius: 6px;
 }
 
 .qofeno-process-tab-slot {
@@ -109,6 +110,7 @@
   top: var(--tab-y);
   width: var(--tab-w);
   aspect-ratio: 1;
+  border-radius: 50%;
 }
 
 .qofeno-process-paper {
@@ -424,3 +426,16 @@
 }
 
 .qofeno-process-tab svg { width: 70%; height: auto; }
+
+:is(.qofeno-process-stacked, .qofeno-process-inline) .qofeno-process-docket-title {
+  top: 9%;
+}
+
+:is(.qofeno-process-stacked, .qofeno-process-inline) .qofeno-process-docket-checklist {
+  padding-block: 3px;
+}
+
+:is(.qofeno-process-stacked, .qofeno-process-inline) .qofeno-process-item {
+  grid-template-columns: clamp(23px, 6.7cqw, 31px) minmax(0, 1fr);
+  gap: clamp(5px, 1.6cqw, 8px);
+}

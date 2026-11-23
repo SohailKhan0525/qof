@@ -35,11 +35,12 @@ const scenes = [
     </div>`],
 ];
 
-export function createProcessStage() {
+export function createProcessStage(chapter) {
   const stage = document.createElement('div');
   stage.className = 'qofeno-process-stage';
   stage.setAttribute('aria-hidden', 'true');
-  stage.innerHTML = scenes.map(([name, scene]) => `
+  const visibleScenes = chapter === undefined ? scenes : [scenes[chapter]];
+  stage.innerHTML = visibleScenes.map(([name, scene]) => `
     <div class="qofeno-process-scene qofeno-process-scene--${name}" data-scene="${name}">
       ${scene}
       <i class="qofeno-process-item-slot"></i>

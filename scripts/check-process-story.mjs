@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { chromium, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const origin = new URL(process.env.QOFENO_CHECK_URL || 'http://localhost:8795').origin;
+const origin = new URL(process.env.QOFENO_CHECK_URL || 'http://localhost:8796').origin;
 const remote = new URL(origin).protocol === 'https:';
 const output = 'test-results/process-story';
 const report = { origin, checkedAt: new Date().toISOString(), checks: [], samples: {}, errors: [], blockedWrites: [] };
@@ -31,9 +31,9 @@ async function check(name, run) {
   }
 }
 
-async function open(width, hash = '') {
+async function open(width, hash = '', height = width > 1000 ? 900 : 850) {
   const context = await browser.newContext({
-    viewport: { width, height: width > 1000 ? 900 : 850 },
+    viewport: { width, height },
     reducedMotion: 'reduce',
     isMobile: width < 768,
     hasTouch: width < 768,
@@ -61,7 +61,7 @@ async function open(width, hash = '') {
 async function geometry() {
   return page.locator('.placement-process-grid').evaluate(grid => {
     const track = grid.querySelector('.qofeno-process-track');
-    const top = document.querySelector('.qofeno-header').offsetHeight + 24;
+    const top = document.querySelector('.qofeno-header').offsetHeight + (grid.classList.contains('qofeno-process-stacked') ? 8 : 24);
     return { start: grid.getBoundingClientRect().top + scrollY - top, distance: grid.clientHeight - track.clientHeight, top };
   });
 }
@@ -82,7 +82,11 @@ async function sample() {
       stage: stageRect,
       item: { x: itemRect.x - stageRect.x, y: itemRect.y - stageRect.y, width: itemRect.width, height: itemRect.height },
       clips: [...stage.querySelectorAll('.qofeno-process-scene')].map(scene => getComputedStyle(scene).clipPath),
-      cards: [...grid.querySelectorAll(':scope > .placement-process-card')].map(card => ({ ...rect(card), title: card.querySelector('h3').textContent.trim() })),
+      cards: [...grid.querySelectorAll(':scope > .placement-process-card')].map(card => ({
+        ...rect(card), title: card.querySelector('h3').textContent.trim(),
+        heading: rect(card.querySelector('h3')), body: rect(card.querySelector('.placement-process-copy p')),
+      })),
+      viewportHeight: innerHeight,
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
     };
   });
@@ -113,6 +117,75 @@ function samePose(before, after) {
   for (const axis of ['x', 'y', 'width', 'height']) {
     assert.ok(Math.abs(before.item[axis] - after.item[axis]) <= .6, `Shared item ${axis} differs at the same scroll position`);
   }
+}
+
+async function prepareStory() {
+  await page.locator('.placement-process-heading').scrollIntoViewIfNeeded();
+  await expect(page.locator('.qofeno-process-active')).toHaveCount(1, { timeout: 10000 });
+  await expect(page.locator('.qofeno-process-track .qofeno-process-stage')).toBeVisible();
+  await page.waitForTimeout(250);
+  return geometry();
+}
+
+function assertInterpolates(frames) {
+  assert.deepEqual([...new Set(frames.map(frame => frame.step))], ['1', '2', '3', '4']);
+  for (let scene = 1; scene < 4; scene++) {
+    const values = frames.map(frame => clipEdges(frame.clips[scene]));
+    assert.ok(values.some(edges => edges.some(edge => edge > 2 && edge < 98)), `Scene ${scene + 1} lacks an intermediate reveal`);
+    assert.ok(new Set(values.map(edges => edges.join('/'))).size >= 3, `Scene ${scene + 1} jumps between endpoints`);
+  }
+  const span = axis => Math.max(...frames.map(frame => frame.item[axis])) - Math.min(...frames.map(frame => frame.item[axis]));
+  assert.ok(span('x') > frames[0].stage.width * .07, 'Shared card does not move horizontally');
+  assert.ok(span('y') > frames[0].stage.height * .12, 'Shared card does not move vertically');
+  assert.ok(span('width') > frames[0].stage.width * .06, 'Shared card does not resize');
+  assert.ok(span('height') > frames[0].stage.height * .015, 'Shared card height does not interpolate');
+}
+
+async function assertNoOverflow() {
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
+}
+
+async function assertInline() {
+  await expect(page.locator('.qofeno-process-inline')).toHaveCount(1);
+  await expect(page.locator('.qofeno-process-track, #how-it-works .pin-spacer, .qofeno-process-stacked')).toHaveCount(0);
+  const cards = page.locator('.placement-process-card');
+  await expect(cards).toHaveCount(4);
+  const kinds = [];
+  for (let index = 0; index < 4; index++) {
+    const card = cards.nth(index);
+    const stage = card.locator('.qofeno-process-stage');
+    await expect(stage).toHaveCount(1);
+    await stage.scrollIntoViewIfNeeded();
+    await expect(stage).toBeVisible();
+    await expect(stage.locator('.qofeno-process-scene')).toHaveCount(1);
+    const panel = await stage.evaluate(element => {
+      const scene = element.querySelector('.qofeno-process-scene');
+      const bounds = element.getBoundingClientRect();
+      const item = element.querySelector('.qofeno-process-item').getBoundingClientRect();
+      return {
+        kind: scene.dataset.scene, position: getComputedStyle(element).position,
+        clip: getComputedStyle(scene).clipPath, width: bounds.width, height: bounds.height,
+        itemInside: item.width > 10 && item.height > 10 && item.left >= bounds.left - 1 && item.right <= bounds.right + 1 && item.top >= bounds.top - 1 && item.bottom <= bounds.bottom + 1,
+      };
+    });
+    assert.notEqual(panel.position, 'fixed');
+    assert.ok(panel.width > 100 && panel.height > 100 && panel.itemInside, 'Inline art or shared card is missing its authored layout');
+    assert.ok(panel.clip === 'none' || clipEdges(panel.clip).every(edge => Math.abs(edge) < .1), 'Inline scene remains clipped away');
+    kinds.push(panel.kind);
+    await expect(card.locator('.interface-illustration')).toBeHidden();
+  }
+  assert.deepEqual(kinds, ['submit', 'review', 'ranking', 'expiry']);
+  await assertNoOverflow();
+}
+
+async function placeBelowStage(locator) {
+  const target = await locator.evaluate(element => {
+    const stage = document.querySelector('.qofeno-process-track .qofeno-process-stage');
+    const offset = document.querySelector('.qofeno-header').offsetHeight + 8;
+    return element.getBoundingClientRect().top + scrollY - offset - stage.getBoundingClientRect().height - 24;
+  });
+  await page.evaluate(y => scrollTo({ top: y, behavior: 'instant' }), target);
+  await page.waitForTimeout(120);
 }
 
 try {
@@ -209,40 +282,130 @@ try {
     assert.deepEqual(audit.violations.map(issue => ({ id: issue.id, targets: issue.nodes.map(node => node.target) })), []);
   });
 
-  await check('Short desktop viewport removes pinning and returns to readable cards', async () => {
+  await check('1440 by 560 retains a compact pinned story', async () => {
     await page.setViewportSize({ width: 1440, height: 560 });
-    await expect(page.locator('.qofeno-process-stage')).toHaveCount(0);
-    await expect(page.locator('.qofeno-process-active')).toHaveCount(0);
-    await expect(page.locator('#how-it-works .pin-spacer')).toHaveCount(0);
-    await expect(page.locator('.placement-process-card')).toHaveCount(4);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
+    const shortRange = await prepareStory();
+    await expect(page.locator('#how-it-works .pin-spacer')).toHaveCount(1);
+    const frames = [];
+    for (let index = 0; index <= 24; index++) frames.push(await seek(shortRange, index / 24));
+    report.samples.shortDesktop = { range: shortRange, forward: frames };
+    assertInterpolates(frames);
+    for (const frame of frames.slice(1, -1)) {
+      assert.ok(Math.abs(frame.stage.y - shortRange.top) <= 1.5);
+      assert.ok(frame.stage.y + frame.stage.height <= frame.viewportHeight - 8, 'Compact desktop stage extends below the viewport');
+      assert.equal(frame.overflow, false);
+    }
   });
   await desktop.close();
 
-  const mobile = await open(390);
-  await check('390px keeps four unpinned Canvas-backed cards with no overflow', async () => {
-    const cards = page.locator('.placement-process-card');
-    for (let index = 0; index < 4; index++) {
-      const card = cards.nth(index);
-      await card.locator('h3').scrollIntoViewIfNeeded();
-      const art = card.locator('.interface-illustration');
-      await art.scrollIntoViewIfNeeded();
-      const canvas = art.locator('canvas.qofeno-scene-canvas');
-      await expect(canvas).toBeVisible();
-      assert.ok(await canvas.evaluate(element => {
-        const pixels = element.getContext('2d').getImageData(0, 0, element.width, element.height).data;
-        let painted = 0;
-        for (let offset = 3; offset < pixels.length; offset += 64) if (pixels[offset]) painted++;
-        return painted > 30;
-      }), 'Mobile process artwork has no painted pixels');
-      assert.equal(await card.evaluate(element => getComputedStyle(element).position === 'fixed'), false);
-    }
-    await expect(page.locator('.qofeno-process-stage, #how-it-works .pin-spacer')).toHaveCount(0);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
-    await page.locator('.placement-process-review').scrollIntoViewIfNeeded();
-    await page.screenshot({ path: `${output}/mobile-process.png` });
+  for (const [width, height] of [[390, 850], [320, 700]]) {
+    const mobile = await open(width, '/#how-it-works', height);
+    let phoneRange;
+    const frames = [];
+    await check(`${width}px uses a pinned stage above copy with actual scene and card interpolation`, async () => {
+      phoneRange = await prepareStory();
+      await expect(page.locator('.qofeno-process-stacked')).toHaveCount(1);
+      await expect(page.locator('#how-it-works .pin-spacer')).toHaveCount(1);
+      for (let index = 0; index <= 32; index++) frames.push(await seek(phoneRange, index / 32));
+      report.samples[`mobile${width}`] = { range: phoneRange, forward: frames };
+      assertInterpolates(frames);
+      for (const frame of frames.slice(1, -1)) {
+        assert.ok(Math.abs(frame.stage.y - phoneRange.top) <= 1.5, `Phone stage y ${frame.stage.y}, expected ${phoneRange.top}`);
+        assert.ok(frame.stage.y + frame.stage.height <= height - 200, 'Pinned illustration leaves too little room to read the copy');
+        assert.equal(frame.overflow, false);
+        frame.cards.forEach((card, index) => assert.ok(Math.abs(card.y + frame.scroll - frames[0].cards[index].y - frames[0].scroll) <= .6, 'Phone copy moved out of document flow'));
+      }
+      for (let index = 0; index < 4; index++) {
+        assert.ok(frames.some(frame => {
+          const { heading, body } = frame.cards[index];
+          const below = frame.stage.y + frame.stage.height;
+          return heading.y >= below + 4 && body.y + body.height < height - 8;
+        }), `Step ${index + 1} heading and description cannot be read together below the stage`);
+      }
+      await expect(page.locator('.qofeno-process-stage')).toHaveAttribute('aria-hidden', 'true');
+      await expect(page.locator('.qofeno-process-stage :is(a, button, input, [tabindex])')).toHaveCount(0);
+    });
+
+    await check(`${width}px reverses smoothly and releases the stage after the final step`, async () => {
+      assert.equal(frames.length, 33, 'Mobile motion setup did not complete');
+      for (let index = 32; index >= 0; index -= 2) samePose(frames[index], await seek(phoneRange, index / 32));
+      const mid = await seek(phoneRange, .5);
+      await page.waitForTimeout(250);
+      samePose(mid, await sample());
+      await page.screenshot({ path: `${output}/mobile-${width}-midpoint.png` });
+      const end = await seek(phoneRange, 1);
+      const after = await seek(phoneRange, 1 + 200 / phoneRange.distance);
+      assert.ok(Math.abs(after.stage.y - end.stage.y + after.scroll - end.scroll) <= 2, 'Phone stage remained pinned beyond its section');
+      assert.ok(after.stage.y < end.stage.y - 150);
+      assert.equal(after.step, '4');
+    });
+
+    await check(`${width}px keeps preview and terms usable below the illustration`, async () => {
+      const preview = page.locator('.placement-process-submit button');
+      await placeBelowStage(preview);
+      const bounds = await preview.boundingBox();
+      const stage = await page.locator('.qofeno-process-stage').boundingBox();
+      assert.ok(bounds.y >= stage.y + stage.height && bounds.y + bounds.height < height, 'Preview action is obscured by the pinned artwork');
+      await preview.tap();
+      await expect(page.locator('dialog[open]')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+      await expect(preview).toBeFocused();
+      // Focus must bring a control out from under the pinned illustration.
+      await preview.evaluate(element => {
+        element.blur();
+        const stage = document.querySelector('.qofeno-process-track .qofeno-process-stage').getBoundingClientRect();
+        scrollTo({ top: element.getBoundingClientRect().top + scrollY - stage.top - stage.height / 2, behavior: 'instant' });
+      });
+      await preview.focus();
+      await page.waitForTimeout(100);
+      const focusedBounds = await preview.boundingBox();
+      const focusedStage = await page.locator('.qofeno-process-stage').boundingBox();
+      assert.ok(focusedBounds.y >= focusedStage.y + focusedStage.height + 4, 'Keyboard focus left the preview control hidden under the illustration');
+      const terms = page.locator('.placement-process-expiry a');
+      await placeBelowStage(terms);
+      await expect(terms).toHaveAttribute('href', '/terms');
+      await terms.tap({ trial: true });
+      const audit = await new AxeBuilder({ page }).include('#how-it-works').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      assert.deepEqual(audit.violations.map(issue => ({ id: issue.id, targets: issue.nodes.map(node => node.target) })), []);
+      await assertNoOverflow();
+    });
+    await mobile.close();
+  }
+
+  const landscape = await open(844, '/#how-it-works', 390);
+  await check('844 by 390 uses four new inline art panels with no pinning', async () => {
+    await page.locator('.placement-process-heading').scrollIntoViewIfNeeded();
+    await assertInline();
+    await page.screenshot({ path: `${output}/landscape-inline.png` });
   });
-  await mobile.close();
+  await landscape.close();
+
+  const resizing = await open(1440);
+  await check('Resizing between desktop phone and inline modes removes stale pins and duplicate artwork', async () => {
+    let resizeRange = await prepareStory();
+    await seek(resizeRange, .5);
+    for (const viewport of [{ width: 390, height: 850 }, { width: 844, height: 390 }, { width: 320, height: 700 }, { width: 390, height: 500 }, { width: 1440, height: 560 }]) {
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(180);
+      if (viewport.height < (viewport.width >= 1000 ? 460 : 540)) {
+        await assertInline();
+        continue;
+      }
+      resizeRange = await prepareStory();
+      await expect(page.locator('.qofeno-process-stage')).toHaveCount(1);
+      await expect(page.locator('.qofeno-process-track')).toHaveCount(1);
+      await expect(page.locator('#how-it-works .pin-spacer')).toHaveCount(1);
+      await expect(page.locator('.qofeno-process-inline')).toHaveCount(0);
+      await expect(page.locator('.qofeno-process-scene')).toHaveCount(4);
+      await expect(page.locator('.placement-process-card')).toHaveCount(4);
+      const frame = await seek(resizeRange, .5);
+      assert.ok(Math.abs(frame.stage.y - resizeRange.top) <= 1.5, 'Pin geometry was stale after resizing');
+      assert.ok(Number(frame.step) >= 2, 'Story did not resume after resizing');
+      await assertNoOverflow();
+    }
+  });
+  await resizing.close();
 
   const linked = await open(1440, '/#how-it-works');
   await check('Direct How it works link reaches the live section without breaking its story', async () => {
